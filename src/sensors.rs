@@ -271,7 +271,7 @@ pub async fn readings(request: Request) -> Response<ResponseBody> {
                 "database_unavailable",
                 "Sensor data is temporarily unavailable.",
             );
-        }
+}
         _ => notify::dispatch(&store).await,
     }
     match store
