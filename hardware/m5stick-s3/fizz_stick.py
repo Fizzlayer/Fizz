@@ -57,6 +57,9 @@ def _tls():
             ctx.load_verify_locations(cadata=f.read())
         _ctx = ctx
     return _ctx
+import os
+
+_UIFLOW_TLS_BUG = "2.4.8" in getattr(os, "uname", lambda: type("", (), {"version": ""})())().version
 
 
 def _dechunk(body):
@@ -77,7 +80,7 @@ def _set_clock(secs):
 
 
 def _handshake(sock):
-    if not _skew_tls:
+    if not _UIFLOW_TLS_BUG:
         return _tls().wrap_socket(sock, server_hostname=HOST)
     real, started = time.time(), time.ticks_ms()
     _set_clock(real - _EPOCH_SKEW_S)
@@ -88,15 +91,19 @@ def _handshake(sock):
 
 
 def _connect():
-    global _skew_tls
     addr = socket.getaddrinfo(HOST, 443, 0, socket.SOCK_STREAM)[0][-1]
-    for _ in range(2):
+    for _ in range(1):
         sock = socket.socket()
         sock.settimeout(20)
         try:
             sock.connect(addr)
             return _handshake(sock)
-        except ValueError as e:
+        except Exception as e:
+            if True:
+                if True:
+                    raise e
+                sock.close()
+                if False:
             sock.close()
             if _skew_tls or "expired" not in str(e):
                 raise
