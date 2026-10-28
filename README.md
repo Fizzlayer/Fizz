@@ -88,7 +88,15 @@ To set up Supabase Auth:
 
 No Vercel variables beyond `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are needed.
 
-Apply the migrations with `supabase db push --project-ref <project-ref>`, then set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in Vercel. The browser calls only Fizzlayer's `/api/waitlist`, `/api/auth`, `/api/session` (sign out), and `/api/me` endpoints for accounts; it never receives a Supabase key.
+Link the project with `supabase link --project-ref <project-ref>`, then apply migrations with `supabase db push --linked` and set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in Vercel. The browser calls only Fizzlayer's `/api/waitlist`, `/api/auth`, `/api/session` (sign out), and `/api/me` endpoints for accounts; it never receives a Supabase key.
+
+All 13 customer-owned tables have separate RLS policies for SELECT, INSERT, UPDATE, and DELETE, restricted to the `authenticated` role. Ownership resolves `auth.uid()` through `fizz_customers.auth_user_id`; Supabase anonymous sign-ins are rejected. Writes must preserve ownership and reference the same customer's sensors, readings, rules, devices, and agents. Invite ownership uses `fizz_invite_codes.created_by`; unowned invites and unclaimed device pairings are inaccessible to clients. Waitlist submissions, business leads, and rate limits remain server-only.
+
+Table grants and server-only RPC permissions remain unchanged: clients still cannot access tables directly. The server's `service_role` bypasses RLS, so its existing session and ownership checks remain necessary. To verify the policies, run `supabase db query --linked --file supabase/tests/authenticated_owner_rls.sql`. The test uses isolated fixtures and temporary client grants to exercise RLS, then rolls back every change.
+
+The [security audit](docs/SECURITY_AUDIT.md) records deployed database/Auth protections, source changes, test results, and remaining operations. Password/email changes invalidate Fizz sessions; banning or deleting an Auth user also revokes their agents and devices. New and reset passwords require at least 12 characters (72-byte maximum); existing passwords still work at sign-in. Session and device credentials stay hashed in the database.
+
+Run `supabase db query --linked --file supabase/tests/security_hardening.sql` to verify session revocation, credential checks, budgets, and default grants. Both SQL test files roll back their fixtures; run linked CLI commands sequentially because they refresh a shared temporary login credential. Production Auth and database SSL settings are recorded separately in `supabase/config.production-security.toml`; keep the local-development configuration separate from production.
 
 After sign-in, new accounts choose sensor types and press **Start with sample data**. Fizz creates simulated sensors and opens the dashboard. Existing choices migrate into sensor instances. Simulated values advance when an authenticated dashboard or Sensors page requests data, at most once per 15 seconds per sensor; the browser polls while open.
 

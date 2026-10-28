@@ -59,6 +59,7 @@ function render(intro) {
   $('auth-title').textContent = current.title;
   $('auth-intro').textContent = intro ?? current.intro;
   $('continue').textContent = current.submit || '';
+  $('password').minLength = mode === 'sign-in' ? 8 : 12;
   $('password').autocomplete = mode === 'sign-in' ? 'current-password' : 'new-password';
   $('email').autocomplete = mode === 'sign-in' ? 'username' : 'email';
   $('password-help').hidden = mode === 'sign-in';
@@ -96,9 +97,10 @@ function validEmail() {
 }
 
 function validPassword() {
-  const length = $('password').value.length;
-  if (length < 8 || length > 72) {
-    showError(mode === 'sign-in' ? 'Enter your password.' : 'Use a password of 8 to 72 characters.');
+  const length = new TextEncoder().encode($('password').value).length;
+  const tooShort = mode === 'sign-in' ? length < 8 : [...$('password').value].length < 12;
+  if (tooShort || length > 72) {
+    showError(mode === 'sign-in' ? 'Enter your password.' : 'Use at least 12 characters, up to 72 bytes.');
     $('password').focus();
     return false;
   }
@@ -335,6 +337,7 @@ $('dashboard-sign-out').addEventListener('click', signOut);
 // - #access_token=...&type=signup|recovery from a Supabase email link, or #error=... if it expired.
 const hash = new URLSearchParams(location.hash.slice(1));
 const authErrors = {
+  mfa_required: [null, 'Complete multi-factor authentication before signing in.'],
   no_account: ['create', 'No Fizzlayer account uses that Google account yet. Enter your invite code to sign up with Google.', 'invite'],
   invalid_invite: ['create', 'That invite code is not valid or has already been used.', 'invite'],
   rate_limited: [null, 'Too many attempts. Try again in an hour.'],

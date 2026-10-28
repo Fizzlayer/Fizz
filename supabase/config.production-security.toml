@@ -1,0 +1,15 @@
+# Review/apply with the CLI using an isolated workdir; see docs/SECURITY_AUDIT.md.
+# Only declared settings are changed. Never push the full local-development config to production.
+project_id = "fizz"
+[auth]
+minimum_password_length = 12
+[auth.email]
+enable_confirmations = true
+secure_password_change = true
+max_frequency = "1m"
+[auth.rate_limit]
+sign_in_sign_ups = 30
+token_verifications = 30
+
+[db.ssl_enforcement]
+enabled = true

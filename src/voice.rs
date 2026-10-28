@@ -40,6 +40,7 @@ impl ElevenLabs {
         }
         Some(Self {
             client: Client::builder()
+                .redirect(reqwest::redirect::Policy::none())
                 .timeout(Duration::from_secs(30))
                 .build()
                 .ok()?,
@@ -159,6 +160,9 @@ pub async fn handle(request: Request) -> Response<ResponseBody> {
     let provider = ElevenLabs::from_env();
     if request.method() == "GET" {
         return reply(200, json!({"available":provider.is_some()}), None);
+    }
+    if let Err(response) = crate::security::paid_request_budget(&store, &token, "voice").await {
+        return response;
     }
     let Some(provider) = provider else {
         return error(

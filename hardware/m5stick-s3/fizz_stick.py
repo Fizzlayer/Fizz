@@ -124,6 +124,8 @@ def post(path, payload, key=None):
             chunk = sock.read(1024)
             if not chunk:
                 break
+            if len(resp) + len(chunk) > 64 * 1024:
+                raise ValueError("Fizz response too large")
             resp += chunk
     finally:
         sock.close()

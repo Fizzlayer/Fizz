@@ -39,7 +39,10 @@ impl Supabase {
         let mut rest_url = Url::parse(&project_url).map_err(|_| ConnectionError::InvalidUrl)?;
         if rest_url.scheme() != "https"
             && !(rest_url.scheme() == "http"
-                && matches!(rest_url.host_str(), Some("localhost" | "127.0.0.1" | "::1")))
+                && matches!(
+                    rest_url.host_str(),
+                    Some("localhost" | "127.0.0.1" | "[::1]")
+                ))
         {
             return Err(ConnectionError::InvalidUrl);
         }
@@ -54,6 +57,7 @@ impl Supabase {
         rest_url.set_fragment(None);
 
         let client = Client::builder()
+            .redirect(reqwest::redirect::Policy::none())
             .timeout(Duration::from_secs(5))
             .build()
             .map_err(|_| ConnectionError::RequestFailed)?;

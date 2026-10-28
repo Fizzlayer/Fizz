@@ -36,7 +36,7 @@ async fn body(request: Request, max: usize) -> Result<Value, Response<ResponseBo
         .headers()
         .get("content-type")
         .and_then(|v| v.to_str().ok())
-        .is_some_and(|v| v.starts_with("application/json"));
+        .is_some_and(|v| crate::security::is_json(v));
     if !json_type {
         return Err(error(415, "unsupported_media_type", "Send JSON."));
     }
@@ -61,6 +61,11 @@ fn db() -> Result<Supabase, Response<ResponseBody>> {
 fn outcome(value: Value, success: u16) -> Response<ResponseBody> {
     match value.get("error").and_then(Value::as_str) {
         Some("unauthorized") => error(401, "unauthorized", "Sign in to continue."),
+        Some("rate_limited") => error(
+            429,
+            "rate_limited",
+            "Reading limit reached. Try again later.",
+        ),
         Some("not_found") => error(404, "not_found", "Sensor not found."),
         Some("invalid_request" | "invalid_reading") => {
             error(400, "invalid_request", "Check the sensor details.")

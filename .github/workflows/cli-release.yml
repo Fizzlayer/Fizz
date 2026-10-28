@@ -13,7 +13,7 @@ on:
         required: true
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   TAG: ${{ github.event.inputs.tag || github.ref_name }}
@@ -30,14 +30,14 @@ jobs:
           - arm-unknown-linux-musleabihf    # Pi Zero, Zero W, Pi 1
           - x86_64-unknown-linux-musl       # Linux PCs and servers
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ env.TAG }}
       - name: Check the tag matches the CLI version
         run: |
           version=$(sed -n 's/^version = "\(.*\)"/\1/p' cli/Cargo.toml | head -1)
           [ "cli-v$version" = "$TAG" ] || { echo "Tag $TAG does not match cli/Cargo.toml version $version"; exit 1; }
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           targets: ${{ matrix.target }}
       - name: Install cargo-zigbuild
@@ -48,17 +48,19 @@ jobs:
       - name: Build
         run: cargo zigbuild --release --locked --manifest-path cli/Cargo.toml --target ${{ matrix.target }}
       - run: cp cli/target/${{ matrix.target }}/release/fizz fizz-${{ matrix.target }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: fizz-${{ matrix.target }}
           path: fizz-${{ matrix.target }}
           if-no-files-found: error
 
   release:
+    permissions:
+      contents: write
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           path: dist
           merge-multiple: true

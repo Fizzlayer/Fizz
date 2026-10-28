@@ -165,6 +165,7 @@ impl AgentPhone {
         };
         let key = read("AGENTPHONE_API_KEY").ok_or("AGENTPHONE_API_KEY is missing or empty.")?;
         let client = Client::builder()
+            .redirect(reqwest::redirect::Policy::none())
             .timeout(Duration::from_secs(8))
             .build()
             .map_err(|_| "Could not initialize the AgentPhone HTTP client.")?;

@@ -7,7 +7,7 @@
 use std::{
     env, fs,
     io::{self, BufRead, Write},
-    path::PathBuf,
+    path::{Path, PathBuf},
     process::ExitCode,
     thread,
     time::{Duration, SystemTime, UNIX_EPOCH},
@@ -90,6 +90,7 @@ fn config_api(config: &Map<String, Value>) -> String {
 fn agent() -> ureq::Agent {
     ureq::Agent::config_builder()
         .http_status_as_error(false)
+        .max_redirects(0)
         .timeout_global(Some(Duration::from_secs(20)))
         .user_agent(format!("fizz-cli/{VERSION}"))
         .build()
@@ -111,7 +112,26 @@ impl Reply {
     }
 }
 
+/// Refuse to transmit device credentials over plaintext or to a URL with hidden components.
+fn validate_api(base: &str) -> Result<()> {
+    let uri: ureq::http::Uri = base
+        .parse()
+        .map_err(|_| "FIZZ_API must be an HTTPS origin.")?;
+    let authority = uri.authority().ok_or("FIZZ_API must have a host.")?;
+    let local = matches!(uri.host(), Some("localhost" | "127.0.0.1" | "[::1]"));
+    if !(uri.scheme_str() == Some("https") || (uri.scheme_str() == Some("http") && local))
+        || authority.as_str().contains('@')
+        || base.contains('#')
+        || uri.query().is_some()
+        || !matches!(uri.path(), "" | "/")
+    {
+        return Err("FIZZ_API must be an HTTPS origin (HTTP is allowed only on loopback).".into());
+    }
+    Ok(())
+}
+
 fn post(base: &str, path: &str, body: &Value, bearer: Option<&str>) -> Result<Reply> {
+    validate_api(base)?;
     let url = format!("{base}{path}");
     let mut request = agent()
         .post(&url)
@@ -123,7 +143,12 @@ fn post(base: &str, path: &str, body: &Value, bearer: Option<&str>) -> Result<Re
         .send(body.to_string())
         .map_err(|e| format!("Could not reach Fizz at {url}: {e}"))?;
     let status = response.status().as_u16();
-    let text = response.body_mut().read_to_string().unwrap_or_default();
+    let text = response
+        .body_mut()
+        .with_config()
+        .limit(1024 * 1024)
+        .read_to_string()
+        .map_err(|_| "Fizz returned an invalid or oversized response.")?;
     let body = serde_json::from_str(&text).unwrap_or(Value::Null);
     Ok(Reply { status, body })
 }
@@ -144,8 +169,53 @@ fn config_path() -> Result<PathBuf> {
 }
 
 fn load_config() -> Result<Option<Map<String, Value>>> {
-    let path = config_path()?;
-    match fs::read_to_string(&path) {
+    load_config_at(&config_path()?)
+}
+
+fn check_config(path: &Path) -> Result<()> {
+    match fs::symlink_metadata(path) {
+        Ok(metadata) => {
+            if !metadata.file_type().is_file() {
+                return Err(format!(
+                    "{} must be a regular file, not a symlink.",
+                    path.display()
+                ));
+            }
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::MetadataExt;
+                // Do not read a key from a file another user can read or write.
+                if metadata.mode() & 0o077 != 0 || metadata.uid() != unsafe { libc::geteuid() } {
+                    return Err(format!(
+                        "{} must be owned by you with mode 600. Run chmod 600 on it.",
+                        path.display()
+                    ));
+                }
+            }
+            Ok(())
+        }
+        Err(e) if e.kind() == io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(format!("Could not inspect {}: {e}", path.display())),
+    }
+}
+
+fn load_config_at(path: &Path) -> Result<Option<Map<String, Value>>> {
+    check_config(path)?;
+    let mut options = fs::OpenOptions::new();
+    options.read(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK);
+    }
+    match options.open(path).and_then(|mut file| {
+        use std::io::Read;
+        let mut text = String::new();
+        std::io::Read::by_ref(&mut file)
+            .take(64 * 1024)
+            .read_to_string(&mut text)?;
+        Ok(text)
+    }) {
         Ok(text) => serde_json::from_str::<Value>(&text)
             .ok()
             .and_then(|v| v.as_object().cloned())
@@ -168,31 +238,45 @@ fn require_config() -> Result<Map<String, Value>> {
 /// The config holds this device's key, so it is written with owner-only permissions.
 fn save_config(config: &Value) -> Result<PathBuf> {
     let path = config_path()?;
-    if let Some(dir) = path.parent() {
-        fs::create_dir_all(dir).map_err(|e| format!("Could not create {}: {e}", dir.display()))?;
-    }
-    let mut options = fs::OpenOptions::new();
-    options.write(true).create(true).truncate(true);
+    save_config_at(&path, config)?;
+    Ok(path)
+}
+
+fn save_config_at(path: &Path, config: &Value) -> Result<()> {
+    check_config(path)?;
+    let dir = path
+        .parent()
+        .filter(|p| !p.as_os_str().is_empty())
+        .unwrap_or(Path::new("."));
+    let mut builder = fs::DirBuilder::new();
+    builder.recursive(true);
     #[cfg(unix)]
     {
-        use std::os::unix::fs::OpenOptionsExt;
-        options.mode(0o600);
+        use std::os::unix::fs::DirBuilderExt;
+        builder.mode(0o700);
     }
-    let mut file = options
-        .open(&path)
-        .map_err(|e| format!("Could not write {}: {e}", path.display()))?;
+    builder
+        .create(dir)
+        .map_err(|e| format!("Could not create {}: {e}", dir.display()))?;
+    // A private temporary file plus atomic rename never truncates a symlink's target,
+    // never exposes a partially written key, and keeps the previous config on failure.
+    let mut file = tempfile::NamedTempFile::new_in(dir)
+        .map_err(|e| format!("Could not create a private config file: {e}"))?;
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
-        let _ = fs::set_permissions(&path, fs::Permissions::from_mode(0o600));
+        file.as_file()
+            .set_permissions(fs::Permissions::from_mode(0o600))
+            .map_err(|e| format!("Could not secure the config: {e}"))?;
     }
-    file.write_all(
-        serde_json::to_string_pretty(config)
-            .unwrap_or_default()
-            .as_bytes(),
-    )
-    .map_err(|e| format!("Could not write {}: {e}", path.display()))?;
-    Ok(path)
+    serde_json::to_writer_pretty(&mut file, config)
+        .map_err(|e| format!("Could not write config: {e}"))?;
+    file.as_file()
+        .sync_all()
+        .map_err(|e| format!("Could not sync config: {e}"))?;
+    file.persist(path)
+        .map_err(|e| format!("Could not save {}: {e}", path.display()))?;
+    Ok(())
 }
 
 fn field<'a>(config: &'a Map<String, Value>, key: &str) -> Result<&'a str> {
@@ -638,6 +722,60 @@ WantedBy=multi-user.target",
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn device_credentials_require_secure_origins() {
+        for base in [
+            "https://fizzlayer.com",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://[::1]:3000",
+        ] {
+            assert!(validate_api(base).is_ok(), "{base}");
+        }
+        for base in [
+            "http://fizzlayer.com",
+            "http://localhost.evil.com",
+            "http://127.0.0.1.evil.com",
+            "https://user@fizzlayer.com",
+            "https://fizzlayer.com/api",
+            "https://fizzlayer.com?q=1",
+            "https://fizzlayer.com#evil",
+            "file:///tmp/key",
+        ] {
+            assert!(validate_api(base).is_err(), "{base}");
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn config_is_private_atomic_and_rejects_symlinks() {
+        use std::os::unix::fs::{PermissionsExt, symlink};
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("nested/device.json");
+        save_config_at(&path, &json!({"api_key":"first"})).unwrap();
+        assert_eq!(
+            fs::metadata(&path).unwrap().permissions().mode() & 0o777,
+            0o600
+        );
+        assert_eq!(
+            fs::metadata(path.parent().unwrap())
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o777,
+            0o700
+        );
+        save_config_at(&path, &json!({"api_key":"second"})).unwrap();
+        assert_eq!(load_config_at(&path).unwrap().unwrap()["api_key"], "second");
+        let link = dir.path().join("link.json");
+        symlink(&path, &link).unwrap();
+        assert!(save_config_at(&link, &json!({"api_key":"stolen"})).is_err());
+        assert!(load_config_at(&link).is_err());
+        assert_eq!(load_config_at(&path).unwrap().unwrap()["api_key"], "second");
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o644)).unwrap();
+        assert!(load_config_at(&path).is_err());
+    }
 
     #[test]
     fn values_parse_as_bool_number_or_text() {

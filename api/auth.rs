@@ -8,6 +8,9 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn handler(request: Request) -> Result<Response<ResponseBody>, Error> {
+    if let Err(response) = fizz::security::guard_request(&request) {
+        return Ok(response);
+    }
     Ok(match request.method().as_str() {
         "GET" => google(request).await,
         "POST" => action(request).await,

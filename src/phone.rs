@@ -34,7 +34,7 @@ async fn body(request: Request, max_bytes: usize) -> Result<Value, Response<Resp
         .headers()
         .get("content-type")
         .and_then(|v| v.to_str().ok())
-        .is_some_and(|v| v.starts_with("application/json"))
+        .is_some_and(|v| crate::security::is_json(v))
     {
         return Err(error(415, "unsupported_media_type", "Send JSON."));
     }
@@ -52,6 +52,11 @@ fn respond(value: Value) -> Response<ResponseBody> {
             401,
             "unauthorized",
             "The phone connection is no longer active.",
+        ),
+        Some("rate_limited") => error(
+            429,
+            "rate_limited",
+            "Reading limit reached. Try again later.",
         ),
         Some("sensor_not_found") => error(404, "sensor_not_found", "Phone sensor not found."),
         Some("clip_not_found") => error(404, "clip_not_found", "Voice clip not found."),

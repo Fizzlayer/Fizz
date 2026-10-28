@@ -7,6 +7,7 @@ pub mod devices;
 pub mod mcp;
 pub mod notify;
 pub mod phone;
+pub mod security;
 pub mod sensors;
 pub mod store;
 pub mod voice;

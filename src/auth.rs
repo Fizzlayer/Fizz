@@ -24,6 +24,7 @@ use vercel_runtime::{Request, Response, ResponseBody};
 use crate::customer::{
     SUPABASE_COOKIE, client_ip, cookie, error, invite_code, json_body, reply_with, session_cookie,
 };
+use crate::security::site_origin;
 use crate::store::Supabase;
 use crate::waitlist::normalize_email;
 
@@ -195,6 +196,9 @@ impl Ctx {
 }
 
 async fn sign_up(ctx: &Ctx, email: &str, password: &str, invite: &str) -> Response<ResponseBody> {
+    if let Err(response) = check_new_password(password) {
+        return response;
+    }
     let Some(invite) = invite_code(invite) else {
         return error(
             400,
@@ -328,7 +332,7 @@ async fn open_email_link(
     }
     let result = match password {
         Some(password) => {
-            if let Err(response) = check_password(password) {
+            if let Err(response) = check_new_password(password) {
                 return response;
             }
             ctx.auth(
@@ -483,6 +487,11 @@ async fn signed_in(
     session: &Value,
     invite: Option<&str>,
 ) -> Result<Account, &'static str> {
+    // Supabase can issue AAL1 tokens after a password step even when a user has MFA.
+    // Do not turn that partial authentication into an unrestricted Fizz session.
+    if !assurance_satisfied(session) {
+        return Err("mfa_required");
+    }
     let user = &session["user"];
     let Some(user_id) = user["id"].as_str() else {
         return Err("failed");
@@ -530,6 +539,23 @@ async fn signed_in(
     }
 }
 
+/// Called only with a session returned/verified by Supabase, never unverified client claims.
+fn assurance_satisfied(session: &Value) -> bool {
+    let needs_mfa = session["user"]["factors"]
+        .as_array()
+        .is_some_and(|factors| factors.iter().any(|factor| factor["status"] == "verified"));
+    if !needs_mfa {
+        return true;
+    }
+    session["access_token"]
+        .as_str()
+        .filter(|token| looks_like_jwt(token))
+        .and_then(|token| token.split('.').nth(1))
+        .and_then(|claims| URL_SAFE_NO_PAD.decode(claims).ok())
+        .and_then(|claims| serde_json::from_slice::<Value>(&claims).ok())
+        .is_some_and(|claims| claims["aal"] == "aal2")
+}
+
 fn account_reply(result: Result<Account, &'static str>) -> Response<ResponseBody> {
     match result {
         Ok(account) => {
@@ -540,6 +566,11 @@ fn account_reply(result: Result<Account, &'static str>) -> Response<ResponseBody
                 &cookies,
             )
         }
+        Err("mfa_required") => error(
+            401,
+            "mfa_required",
+            "Complete multi-factor authentication before signing in.",
+        ),
         Err("no_account") => error(
             404,
             "no_account",
@@ -681,6 +712,18 @@ fn check_password(password: &str) -> Result<(), Response<ResponseBody>> {
     }
 }
 
+fn check_new_password(password: &str) -> Result<(), Response<ResponseBody>> {
+    if password.chars().count() >= 12 && password.len() <= 72 {
+        Ok(())
+    } else {
+        Err(error(
+            400,
+            "weak_password",
+            "Use at least 12 characters, up to 72 bytes.",
+        ))
+    }
+}
+
 /// A Supabase access token: three base64url parts. This only keeps junk out of cookies and
 /// requests; Supabase does the real check.
 fn looks_like_jwt(token: &str) -> bool {
@@ -698,19 +741,6 @@ fn pkce_challenge(verifier: &str) -> String {
 
 /// Supabase only redirects to URLs on its allow list, so links built from this origin must match
 /// the project's Redirect URLs, such as `https://fizzlayer.com/api/auth`.
-fn site_origin(host: Option<&str>) -> Option<String> {
-    let host = host?;
-    if host.is_empty()
-        || !host
-            .bytes()
-            .all(|c| c.is_ascii_alphanumeric() || matches!(c, b'.' | b'-' | b':'))
-    {
-        return None;
-    }
-    let local = host.starts_with("localhost") || host.starts_with("127.0.0.1");
-    Some(format!("{}://{host}", if local { "http" } else { "https" }))
-}
-
 fn host(request: &Request) -> Option<&str> {
     request.headers().get("host")?.to_str().ok()
 }
@@ -739,6 +769,35 @@ fn redirect(location: &str, cookies: &[&str]) -> Response<ResponseBody> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn verified_mfa_factors_cannot_be_bypassed_with_a_password_only_session() {
+        let session = |aal: &str| {
+            json!({
+                "user":{"factors":[{"status":"verified"}]},
+                "access_token":format!("e30.{}.signature",URL_SAFE_NO_PAD.encode(json!({"aal":aal}).to_string()))
+            })
+        };
+        assert!(!assurance_satisfied(&session("aal1")));
+        assert!(assurance_satisfied(&session("aal2")));
+        assert!(!assurance_satisfied(
+            &json!({"user":{"factors":[{"status":"verified"}]}})
+        ));
+        assert!(assurance_satisfied(
+            &json!({"user":{"factors":[{"status":"unverified"}]}})
+        ));
+        assert!(assurance_satisfied(&json!({"user":{}})));
+    }
+
+    #[test]
+    fn new_passwords_require_twelve_characters_without_locking_out_existing_users() {
+        assert!(check_new_password("short-pass").is_err());
+        assert!(check_password("old-pass").is_ok());
+        assert!(check_new_password("a-long-password").is_ok());
+        assert!(check_new_password(&"x".repeat(73)).is_err());
+        assert!(check_new_password(&"🌊".repeat(4)).is_err());
+        assert!(check_new_password(&"🌊".repeat(12)).is_ok());
+    }
 
     #[test]
     fn pkce_challenge_matches_rfc_7636_example() {

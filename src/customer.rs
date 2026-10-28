@@ -44,7 +44,7 @@ pub async fn json_body(request: Request, limit: usize) -> Result<Value, Response
         .headers()
         .get("content-type")
         .and_then(|v| v.to_str().ok())
-        .is_some_and(|v| v.starts_with("application/json"));
+        .is_some_and(crate::security::is_json);
     if !is_json {
         return Err(error(415, "unsupported_media_type", "Send JSON."));
     }
@@ -53,7 +53,12 @@ pub async fn json_body(request: Request, limit: usize) -> Result<Value, Response
         .await
         .map_err(|_| error(413, "invalid_request", "Request is too large."))?
         .to_bytes();
-    serde_json::from_slice(&bytes).map_err(|_| error(400, "invalid_request", "Send a JSON object."))
+    let value: Value = serde_json::from_slice(&bytes)
+        .map_err(|_| error(400, "invalid_request", "Send a JSON object."))?;
+    if !value.is_object() {
+        return Err(error(400, "invalid_request", "Send a JSON object."));
+    }
+    Ok(value)
 }
 
 /// The caller's IP for rate limiting. Vercel sets `x-real-ip` and overwrites
@@ -211,7 +216,7 @@ async fn update_sensor(request: Request, removing: bool) -> Response<ResponseBod
         .headers()
         .get("content-type")
         .and_then(|value| value.to_str().ok())
-        .is_some_and(|value| value.starts_with("application/json"));
+        .is_some_and(crate::security::is_json);
     if !is_json {
         return error(415, "unsupported_media_type", "Send JSON.");
     }

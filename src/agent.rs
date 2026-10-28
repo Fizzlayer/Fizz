@@ -15,7 +15,7 @@ async fn body(request: Request) -> Result<Value, Response<ResponseBody>> {
         .headers()
         .get("content-type")
         .and_then(|v| v.to_str().ok())
-        .is_some_and(|v| v.starts_with("application/json"))
+        .is_some_and(|v| crate::security::is_json(v))
     {
         return Err(error(415, "unsupported_media_type", "Send JSON."));
     }
@@ -376,6 +376,9 @@ pub async fn chat(request: Request) -> Response<ResponseBody> {
             "Chat is temporarily unavailable.",
         );
     };
+    if let Err(response) = crate::security::paid_request_budget(&store, &token, "chat").await {
+        return response;
+    }
     let mut context = match store
         .rpc("fizz_chat_context", json!({"p_token":token}))
         .await
@@ -418,6 +421,7 @@ pub async fn chat(request: Request) -> Response<ResponseBody> {
     };
     let model = env::var("AI_GATEWAY_MODEL").unwrap_or_else(|_| "openai/gpt-5-mini".to_owned());
     let client = match reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
         .timeout(Duration::from_secs(25))
         .build()
     {
