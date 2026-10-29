@@ -1,0 +1,37 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:05.004
+Meet your physical world.
+A populated workspace. No account or hardware needed.
+
+00:00:05.004 --> 00:00:08.608
+Every sensor, in context.
+Explore six sample sensors across three spaces.
+
+00:00:08.608 --> 00:00:15.902
+See the readings behind a signal.
+Open a sensor to explore its simulated history.
+
+00:00:15.902 --> 00:00:25.053
+Ask a question. Get context.
+Fizz replies using the sample readings on screen.
+
+00:00:25.053 --> 00:00:32.221
+Set a threshold in seconds.
+Watch the cold room above 7 °C, with a phone call preview.
+
+00:00:32.221 --> 00:00:39.810
+Catch the change as it happens.
+A sample spike crosses the limit and triggers the alert.
+
+00:00:39.810 --> 00:00:48.601
+Reach the right person.
+Preview the phone alert. No real call is placed in this demo.
+
+00:00:48.601 --> 00:00:54.187
+Back inside the limit.
+Resolve the spike and watch the workspace return to all clear.
+
+00:00:54.187 --> 00:00:59.762
+Your world has a sidekick.
+Try it yourself at fizzlayer.com/demo.html

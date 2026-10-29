@@ -1,0 +1,52 @@
+{
+  "source": "walkthrough-source.webm",
+  "offset": 1.0634929040024872,
+  "duration": 59.76156049600104,
+  "scenes": [
+    {
+      "start": 4.29799547418952e-06,
+      "title": "Meet your physical world.",
+      "subtitle": "A populated workspace. No account or hardware needed."
+    },
+    {
+      "start": 5.003527446999215,
+      "title": "Every sensor, in context.",
+      "subtitle": "Explore six sample sensors across three spaces."
+    },
+    {
+      "start": 8.607503858998825,
+      "title": "See the readings behind a signal.",
+      "subtitle": "Open a sensor to explore its simulated history."
+    },
+    {
+      "start": 15.901707692995842,
+      "title": "Ask a question. Get context.",
+      "subtitle": "Fizz replies using the sample readings on screen."
+    },
+    {
+      "start": 25.053414686997712,
+      "title": "Set a threshold in seconds.",
+      "subtitle": "Watch the cold room above 7 \u00b0C, with a phone call preview."
+    },
+    {
+      "start": 32.22145957600151,
+      "title": "Catch the change as it happens.",
+      "subtitle": "A sample spike crosses the limit and triggers the alert."
+    },
+    {
+      "start": 39.80994779399771,
+      "title": "Reach the right person.",
+      "subtitle": "Preview the phone alert. No real call is placed in this demo."
+    },
+    {
+      "start": 48.601151472998026,
+      "title": "Back inside the limit.",
+      "subtitle": "Resolve the spike and watch the workspace return to all clear."
+    },
+    {
+      "start": 54.18653787999938,
+      "title": "Your world has a sidekick.",
+      "subtitle": "Try it yourself at fizzlayer.com/demo.html"
+    }
+  ]
+}

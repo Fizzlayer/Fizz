@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f9fb">
+  <title>Interactive dashboard demo · Fizzlayer</title>
+  <meta name="description" content="Explore Fizzlayer with a populated sample workspace. Watch sensor readings, ask Fizz questions, and try a simulated alert. No account needed.">
+  <link rel="icon" href="/fizz-agent.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/design.css">
+  <link rel="stylesheet" href="/app.css">
+  <link rel="stylesheet" href="/dashboard.css">
+  <link rel="stylesheet" href="/workspace.css">
+  <link rel="stylesheet" href="/demo.css">
+  <script src="/sensor-kinds.js" defer></script>
+  <script src="/demo.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#workspace-content">Skip to demo</a>
+  <main class="shell dashboard-active">
+    <div class="dashboard" id="overview">
+      <header class="dashboard-bar">
+        <a class="dashboard-logo" href="/" aria-label="Fizzlayer home"><img src="/fizz-agent.svg" alt="" width="32" height="32">Fizzlayer<span>.</span></a>
+        <div class="workspace-switch"><span class="workspace-monogram" aria-hidden="true">H</span><div>Harbor & Pine<small>Sample operations workspace</small></div></div>
+        <p class="sidebar-label">EXPLORE THE DEMO</p>
+        <nav aria-label="Demo workspace">
+          <a href="#overview" class="active">▦ <span>Overview</span></a>
+          <a href="#sensors">⌁ <span>Sensors</span></a>
+          <a href="#ask-fizz">✧ <span>Ask Fizz</span></a>
+          <a href="#alerts">△ <span>Alerts & activity</span></a>
+        </nav>
+        <div class="sidebar-guide"><img src="/fizz-agent.svg" alt="" width="39" height="39"><strong>Your world has a sidekick.</strong><p>Explore the readings. Ask a question. See an alert happen.</p><a href="/#join">Bring Fizz to your world →</a></div>
+        <div class="dashboard-account"><span class="account-avatar" aria-hidden="true">◈</span><span>Public demo</span><a href="/">Back to website ↗</a></div>
+      </header>
+      <div class="workspace-content" id="workspace-content" tabindex="-1">
+        <div class="demo-banner"><div><strong>INTERACTIVE DEMO</strong><span>All readings and Fizz replies are simulated. No real calls are placed.</span></div><a href="/#join">Get early access ↗</a></div>
+        <div class="workspace-topbar"><div class="workspace-breadcrumb">Harbor & Pine <span aria-hidden="true">/</span> <strong>Overview</strong></div><span><span class="status-dot" aria-hidden="true"></span><span id="stream-status">Sample stream running</span></span></div>
+        <div class="dashboard-heading"><div><p class="setup-eyebrow">YOUR PHYSICAL WORLD, IN FOCUS</p><h1>Your world, at a glance.</h1><p>Six sensors. Three spaces. One helpful sidekick.</p></div><div class="heading-actions"><button class="secondary" id="pause-demo" type="button" aria-pressed="false">Pause readings</button><button class="secondary" id="reset-demo" type="button">Reset demo</button></div></div>
+        <div class="stats-grid" aria-label="Sample workspace summary">
+          <div class="stat-card"><div class="stat-top"><span>Sample sensors</span><span aria-hidden="true">⌁</span></div><strong>6</strong><p>Populated and updating</p></div>
+          <div class="stat-card"><div class="stat-top"><span>Spaces watched</span><span aria-hidden="true">▦</span></div><strong>3</strong><p>Storage, greenhouse, office</p></div>
+          <div class="stat-card"><div class="stat-top"><span>Enabled alerts</span><span aria-hidden="true">△</span></div><strong id="enabled-count">2</strong><p>Your sample watch list</p></div>
+          <div class="stat-card"><div class="stat-top"><span>Workspace status</span><span class="status-dot" aria-hidden="true"></span></div><strong id="workspace-health" class="health-value">All clear</strong><p id="health-detail">Readings within their limits</p></div>
+        </div>
+        <section class="demo-scenario" aria-labelledby="scenario-title"><div><p class="setup-eyebrow">TRY A REAL-WORLD SCENARIO</p><h2 id="scenario-title">What if the cold room warms up?</h2><p>Trigger a sample spike to see a threshold alert and phone call preview.</p><p id="scenario-result" role="status" hidden>Cold Room is now 9.2 °C. <a href="#alerts">See alerts & activity ↓</a></p></div><button class="primary" id="simulate-spike" type="button">Simulate temperature spike ↗</button></section>
+        <div class="dashboard-grid">
+          <div class="dashboard-main">
+            <section class="dash-panel" id="sensors" aria-labelledby="sensors-title">
+              <div class="section-heading"><div><p class="setup-eyebrow">CONNECTED ENVIRONMENT</p><h2 id="sensors-title">Sensor activity</h2></div><span class="demo-pill">SAMPLE DATA</span></div>
+              <div class="sensor-toolbar"><div class="sensor-filters" role="group" aria-label="Filter sample sensors"><button type="button" data-filter="all" aria-pressed="true">All sensors</button><button type="button" data-filter="storage" aria-pressed="false">Storage</button><button type="button" data-filter="greenhouse" aria-pressed="false">Greenhouse</button></div><span class="live-caption">UPDATES EVERY 3S</span></div>
+              <div class="live-sensors" id="demo-sensors"></div>
+              <p class="trend-note">Simulated history · click a sensor to explore its readings.</p>
+            </section>
+            <section class="dash-panel alerts-panel" id="alerts" aria-labelledby="alerts-title">
+              <div class="section-heading"><div><p class="setup-eyebrow">YOUR WATCH LIST</p><h2 id="alerts-title">Alerts & activity</h2></div><span class="alert-chip watching" id="alert-summary">2 watching</span></div>
+              <div id="demo-events" class="demo-events" aria-live="polite"></div>
+              <ul id="demo-rules" class="alert-items"></ul>
+              <details class="alert-builder" id="alert-builder"><summary>Create a threshold alert</summary>
+                <form id="demo-alert-form" class="demo-alert-form">
+                  <label>Sensor<select id="rule-sensor" required></select></label>
+                  <label>Condition<select id="rule-comparator"><option value="gt">Above</option><option value="lt">Below</option></select></label>
+                  <label>Threshold<input id="rule-threshold" type="number" step="any" value="8" required></label>
+                  <label>Notification<select id="rule-notification"><option value="call">Phone call preview</option><option value="dashboard">Dashboard only</option></select></label>
+                  <button class="primary" type="submit">Create demo alert</button>
+                </form>
+              </details>
+              <p id="rule-message" class="form-message" role="status"></p>
+            </section>
+          </div>
+          <section class="dash-panel chat-panel" id="ask-fizz" aria-labelledby="chat-title">
+            <div class="section-heading"><div><p class="setup-eyebrow">YOUR AI SIDEKICK</p><h2 id="chat-title">Ask Fizz</h2><div class="agent-availability">Explore the sample workspace</div></div><img src="/fizz-agent.svg" alt="" class="demo-chat-avatar" width="48" height="48"></div>
+            <div class="chat-messages" id="demo-chat" role="log" aria-label="Demo conversation"></div>
+            <div class="chat-prompts" aria-label="Suggested demo questions"><button type="button" data-prompt="Give me a summary of my sensors.">Summarize my sensors ↗</button><button type="button" data-prompt="How is the cold room doing?">Check the cold room ↗</button><button type="button" data-prompt="What is on my watch list?">What's on my watch list? ↗</button></div>
+            <form class="chat-compose" id="demo-chat-form"><label class="visually-hidden" for="demo-chat-input">Ask Fizz about the sample sensors</label><input id="demo-chat-input" placeholder="Ask about the cold room, plants, or alerts…" maxlength="500" autocomplete="off" required><button class="primary" type="submit" aria-label="Send demo question">↗</button></form>
+            <p class="chat-note">Demo replies use the sample readings shown here.</p>
+          </section>
+        </div>
+        <section class="demo-bottom-cta"><div><h2>Now imagine your own world here.</h2><p>Your devices, your readings, and Fizz watching what matters.</p></div><a href="/#join" class="primary">Join the waitlist →</a></section>
+        <footer class="dashboard-footer"><span>FIZZLAYER / INTERACTIVE SAMPLE WORKSPACE</span><span id="demo-updated">Starting sample stream…</span></footer>
+        <noscript><p>This interactive demo needs JavaScript. <a href="/#demo">Watch the product video instead.</a></p></noscript>
+      </div>
+    </div>
+  </main>
+  <dialog id="sensor-dialog" class="demo-dialog" aria-labelledby="detail-title"><button type="button" class="secondary dialog-close" data-close-dialog>Close ×</button><p class="setup-eyebrow">SAMPLE SENSOR DETAIL</p><h2 id="detail-title"></h2><p id="detail-value" class="detail-value"></p><div id="detail-chart"></div><p id="detail-description"></p><p class="detail-footnote">Recent simulated readings. All data stays in this demo.</p></dialog>
+  <dialog id="call-dialog" class="demo-dialog call-dialog" aria-labelledby="call-title"><button type="button" class="secondary dialog-close" data-close-dialog>Close ×</button><img src="/fizz-agent.svg" alt="" width="64" height="64"><p class="setup-eyebrow">SIMULATED PHONE ALERT</p><h2 id="call-title">Fizz is calling the shift lead.</h2><p id="call-transcript"></p><p class="detail-footnote">This is a call preview. No phone number is used and no real call is placed.</p><button type="button" class="primary" data-close-dialog>Got it — back to the demo</button></dialog>
+</body>
+</html>

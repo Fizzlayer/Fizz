@@ -3,3 +3,4 @@
 .env*
 /supabase/.temp/
 /cli/target/
+__pycache__/

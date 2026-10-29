@@ -9,6 +9,8 @@ The hackathon product scope, architecture, demo flow, and parallel work assignme
 - `api/status.rs` — native Rust Vercel Function at `/api/status`
 - `src/store/mod.rs` — server-side Supabase REST client and connection check
 - `public/index.html` — static page at `/`
+- `public/demo.html`, `public/demo.js` — public interactive dashboard with simulated sensors, local demo replies, and alert/call previews; no sign-in or product API access
+- `tools/demo/walkthrough.py` — desktop/mobile demo verification and a real screen recording with explanatory overlays for Twitter
 - `public/design.css`, `public/landing.css` — shared brand tokens and front-page design
 - `public/workspace.css` — shared workspace, dashboard, and account presentation
 - `public/app.html` — account onboarding and live sensor dashboard

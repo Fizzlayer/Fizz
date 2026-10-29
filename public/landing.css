@@ -31,6 +31,8 @@ body { overflow-x: clip; }
 .hero-secondary { display: flex; align-items: center; gap: 8px; width: fit-content; margin-top: 30px; color: #425b6b; text-decoration: none; font-size: 12px; font-weight: 500; }
 .hero-secondary .play-icon { display: grid; place-items: center; width: 25px; height: 25px; border: 1px solid #cedbe4; border-radius: 50%; color: var(--accent); font-size: 9px; }
 .hero-secondary:hover { color: var(--accent); }
+.demo-invite { color: #728794; font-size: 11px; line-height: 1.7; margin: 12px 0 0; }
+.demo-invite a { color: #476c80; text-underline-offset: 3px; }
 .world-visual { position: relative; min-width: 0; padding-block: 23px; }
 .world-frame { position: relative; aspect-ratio: 1.12; border: 1px solid #395365; border-radius: 18px; background: radial-gradient(ellipse at 50% 45%, #1a4151, #0b1c2b 70%); box-shadow: 0 30px 65px -25px #22495a50, 0 0 0 7px #fff9; overflow: hidden; }
 .world-frame::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(#8cb6c02e .7px, transparent .7px); background-size: 20px 20px; mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent); }

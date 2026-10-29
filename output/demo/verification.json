@@ -1,0 +1,24 @@
+[
+  {
+    "viewport": "desktop",
+    "filters": "PASS",
+    "sensor_detail_and_focus": "PASS",
+    "chat_and_chat_alert": "PASS",
+    "create_trigger_preview_resolve": "PASS",
+    "pause_delete_reset": "PASS",
+    "overflow": "PASS",
+    "page_errors": [],
+    "product_api_requests": []
+  },
+  {
+    "viewport": "mobile",
+    "filters": "PASS",
+    "sensor_detail_and_focus": "PASS",
+    "chat_and_chat_alert": "PASS",
+    "create_trigger_preview_resolve": "PASS",
+    "pause_delete_reset": "PASS",
+    "overflow": "PASS",
+    "page_errors": [],
+    "product_api_requests": []
+  }
+]
