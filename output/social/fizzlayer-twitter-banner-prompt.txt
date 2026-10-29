@@ -1,0 +1,17 @@
+Generated with the built-in image generation tool.
+Reference artwork: public/og.png and public/fizz-logo-480.png.
+
+Use case: ads-marketing.
+Asset type: finished Twitter/X profile header banner, exactly 1500 x 500 pixels, 3:1 landscape.
+Primary request: Adapt the provided Fizzlayer social card and mascot into a beautifully composed, polished Twitter profile banner for the same brand.
+Input images: Image 1 (/home/npcoder/fizz/public/og.png) is the existing brand social card, used as visual identity reference. Image 2 (/home/npcoder/fizz/public/fizz-logo-480.png) is the authoritative Fizz mascot reference. Preserve this mascot's recognizable light-cyan pixel-art orb shape, two dark square eyes, little feet and pixel sparkles. This is an adaptation of the existing brand artwork, not a new logo.
+Scene/backdrop: edge-to-edge deep midnight navy #0b1822, with very subtle blue-cyan ambient glow behind the mascot, sparse tiny cyan square stars and faint delicate signal paths. Elegant, intentional negative space.
+Composition/framing: Design directly for the extremely wide 3:1 canvas. Keep the lower-left 300 x 190 pixel area almost empty navy because Twitter's circular profile photo will overlap that region. Essential content fits in the central vertical safe band y=95 to y=365, with 75px right and top breathing room. Place the main wordmark at x approximately 365, y approximately 115, and supporting tagline below at x365, y220. Place the large faithful pixel mascot around x1170,y235, approximately 240px across, with delicate concentric square-stepped glow. On the far right around the mascot, only three very small understated pixel sensor symbols (temperature, water droplet, wireless signal) connected by faint cyan thin paths. Keep generous separation between mascot art and text.
+Typography: refined contemporary geometric sans-serif wordmark, large warm-white title, tight polished kerning; supporting text in a clean highly legible sans-serif, pale cyan-white, significantly smaller than title. Tiny website in muted cyan beneath. Flat crisp 2D branded editorial design with pixel-art mascot. No full UI mockup.
+Text (verbatim), and no other text:
+"Fizzlayer."
+"The physical layer"
+"for AI agents."
+"fizzlayer.com"
+Text hierarchy: title about 76px tall, two-line tagline about 34px, website about 18px. All lettering razor sharp and perfectly spelled.
+Constraints: full-bleed completed banner image only. Preserve the mascot identity and navy/icy-cyan brand palette. No photographs, no generic robot, no rainbow gradient, no 3D mascot, no extra slogans, no CTA button, no border, no watermark, no Twitter logo, no simulated browser, no profile-circle overlay. Visually calm, memorable, professional. Output exactly 1500 x 500 if possible; preserve the exact 3:1 aspect ratio.

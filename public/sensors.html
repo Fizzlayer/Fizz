@@ -1,19 +1,28 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0b1722">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#f6f9fb">
   <title>Sensors · Fizzlayer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/sky.css"><link rel="stylesheet" href="/app.css"><link rel="stylesheet" href="/dashboard.css"><link rel="stylesheet" href="/sensors.css">
+  <link rel="stylesheet" href="/design.css">
+  <link rel="stylesheet" href="/app.css"><link rel="stylesheet" href="/dashboard.css"><link rel="stylesheet" href="/sensors.css">
   <link rel="stylesheet" href="/voice-clips.css">
   <script src="/sensor-kinds.js" defer></script>
   <script src="/voice-clips.js" defer></script>
   <script src="/sensors.js" defer></script>
+  <link rel="stylesheet" href="/workspace.css">
 </head>
-<body><div class="pixel-sky" aria-hidden="true"><span class="shooting-star shooting-star-one"></span><span class="shooting-star shooting-star-two"></span><span class="shooting-star shooting-star-three"></span></div>
-<main class="shell dashboard-active"><section class="dashboard" aria-labelledby="sensors-title">
-  <header class="dashboard-bar"><a class="dashboard-logo" href="/">Fizzlayer<span>.</span></a><nav aria-label="Workspace"><a href="/app.html">Overview</a><a class="active" href="/sensors.html">Sensors</a><a href="/agents.html">Agents</a><a href="/settings.html">Settings</a></nav><div class="dashboard-account"><span id="sensors-username"></span><button type="button" id="sensors-sign-out">Sign out</button></div></header>
+<body><main class="shell dashboard-active"><section class="dashboard" aria-labelledby="sensors-title">
+  <a class="skip-link" href="#workspace-content">Skip to content</a>
+      <header class="dashboard-bar">
+        <a class="dashboard-logo" href="/" aria-label="Fizzlayer home"><img src="/fizz-agent.svg" alt="" width="32" height="32">Fizzlayer<span>.</span></a>
+        <div class="workspace-switch"><span class="workspace-monogram" aria-hidden="true">F</span><div>Personal workspace<small>Fizzlayer early access</small></div></div>
+        <p class="sidebar-label">WORKSPACE</p>
+        <nav aria-label="Workspace"><a href="/app.html"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Overview</a><a class="active" href="/sensors.html" aria-current="page"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8a11 11 0 0 1 16 0M7 11a7 7 0 0 1 10 0M10 14a3 3 0 0 1 4 0"/><circle cx="12" cy="18" r="1"/></svg>Sensors</a><a href="/agents.html"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="7" width="16" height="13" rx="3"/><path d="M12 3v4M1 12h3m16 0h3M8 12h.01M16 12h.01M9 16h6"/></svg>Agents</a><a href="/settings.html"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3-1 3-3 1 1 3-2 2 2 2-1 3 3 1 1 3h6l1-3 3-1-1-3 2-2-2-2 1-3-3-1-1-3z"/><circle cx="12" cy="12" r="3"/></svg>Settings</a></nav>
+        <div class="sidebar-guide"><img src="/fizz-agent.svg" alt="" width="39" height="39"><strong>Your world has a sidekick.</strong><p>Connect your first device and let Fizz make sense of the signals.</p><a href="/#connect">Explore the platform <span aria-hidden="true">↗</span></a></div>
+        <div class="dashboard-account"><span class="account-avatar" aria-hidden="true">◈</span><span id="sensors-username"></span><button type="button" id="sensors-sign-out">Sign out</button></div>
+      </header>
+      <div class="workspace-content" id="workspace-content" tabindex="-1"><div class="workspace-topbar"><div class="workspace-breadcrumb">Workspace <span aria-hidden="true">/</span> <strong>Sensors</strong></div><span><span class="status-dot" aria-hidden="true"></span> Personal workspace</span></div>
   <div class="sensors-heading"><div><p class="setup-eyebrow">YOUR SIGNALS / YOUR RULES</p><h1 id="sensors-title">Sensors</h1><p>Give Fizz more ways to understand your world.</p></div><img src="/fizz-agent.svg" alt="" aria-hidden="true"></div>
   <section class="dash-panel sensor-add" aria-labelledby="add-title"><div class="section-heading"><div><p class="setup-eyebrow">01 / EXPAND FIZZ</p><h2 id="add-title">Add a sensor</h2></div></div><form id="add-sensor-form" class="sensor-add-form"><div class="kind-field"><span class="field-label" id="new-kind-label">Type</span><input type="hidden" id="new-kind" value="water"><div class="kind-picker" id="kind-picker"><button type="button" class="kind-button" id="kind-button" aria-haspopup="listbox" aria-expanded="false" aria-controls="kind-options" aria-labelledby="new-kind-label kind-button"></button><ul class="kind-options" id="kind-options" role="listbox" tabindex="-1" aria-labelledby="new-kind-label" hidden></ul></div></div><label for="new-name">Name<input id="new-name" maxlength="60" placeholder="e.g. Kitchen temperature"></label><button class="primary" type="submit">Add sample sensor +</button></form><p class="form-message" id="add-message" role="status"></p></section>
   <section class="sensor-collection" aria-labelledby="your-sensors-title"><div class="section-heading"><div><p class="setup-eyebrow">02 / YOUR SENSORS</p><h2 id="your-sensors-title">Connected to Fizzlayer</h2></div><span id="sensor-count"></span></div><div id="sensor-list" class="sensor-list"></div><p id="sensor-empty" class="dashboard-empty" hidden>No sensors yet. Add one above to start with sample data.</p></section>
@@ -27,4 +36,4 @@
   -H 'Content-Type: application/json' \
   -d '{"sensor_id":"YOUR_SENSOR_ID","event_id":"sample-001","metrics":{"temperature_c":27.4}}'</code></pre></section>
   <p class="form-message" id="page-error" role="alert"></p>
-</section></main></body></html>
+</div></section></main></body></html>

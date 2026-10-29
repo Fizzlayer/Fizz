@@ -57,6 +57,7 @@ function render(intro) {
   $('forgot').textContent = mode === 'forgot' ? 'Back to sign in' : 'Forgot password?';
   $('step-label').textContent = current.label;
   $('auth-title').textContent = current.title;
+  document.title = `${current.title} · Fizzlayer`;
   $('auth-intro').textContent = intro ?? current.intro;
   $('continue').textContent = current.submit || '';
   $('password').minLength = mode === 'sign-in' ? 8 : 12;

@@ -1,5 +1,6 @@
 addEventListener('DOMContentLoaded', () => {
   for (const card of document.querySelectorAll('.use-card[data-kind]')) card.querySelector('.use-head').prepend(window.fizzKinds.badge(card.dataset.kind));
+  for (const signal of document.querySelectorAll('[data-signal]')) signal.prepend(window.fizzKinds.badge(signal.dataset.signal));
 });
 // Mobile menu: toggle, close after choosing a link or pressing Escape.
 const navToggle = document.getElementById('nav-toggle');

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0b1722">
+    <meta name="theme-color" content="#fcfdfd">
     <title>Fizzlayer — The physical layer for AI agents</title>
     <meta name="description" content="Fizzlayer is the physical layer for AI agents. Connect any sensor, ask about it in plain English, and get a call when something goes wrong. Join the waitlist.">
     <meta property="og:type" content="website">
@@ -19,395 +19,92 @@
     <link rel="icon" href="/fizz-agent.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/design.css">
+    <link rel="stylesheet" href="/landing.css">
     <script src="/auth-redirect.js"></script>
-    <link rel="stylesheet" href="/sky.css">
     <script src="/sensor-kinds.js" defer></script>
-    <style>
-      :root { color-scheme: dark; font-family: "VT323", monospace; }
-      * { box-sizing: border-box; }
-      .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-      html { scroll-behavior: smooth; scroll-padding-top: 5.5rem; }
-      body { margin: 0; overflow-x: hidden; background: #0b1722; color: #f4f9fa; }
-      main { position: relative; z-index: 1; }
-      .site-nav { position: sticky; top: 0; z-index: 10; background: rgba(11, 23, 34, .94); border-bottom: 2px solid #1a4050; }
-      .site-nav nav { position: relative; width: min(1100px, calc(100% - 3rem)); min-height: 4.5rem; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-      .nav-logo { font-size: 2.4rem; color: #f4f9fa; text-decoration: none; }
-      .nav-logo span { color: #a9eaf7; }
-      .nav-links { display: flex; align-items: center; gap: 1.6rem; margin: 0; padding: 0; list-style: none; }
-      .nav-links a { font-size: 1.45rem; color: #bdd5dc; text-decoration: none; }
-      .nav-links a:hover, .nav-links a[aria-current="true"] { color: #a9eaf7; }
-      .nav-links a[aria-current="true"] { text-decoration: underline; text-underline-offset: 6px; }
-      .nav-links .nav-cta { color: #0b1722; background: #a9eaf7; padding: .35rem .9rem; border-radius: .45rem; }
-      .nav-links .nav-cta:hover { color: #0b1722; background: #d1f7ff; }
-      .nav-toggle { display: none; font: inherit; font-size: 1.45rem; color: #a9eaf7; background: none; border: 2px solid #3f8ea3; padding: .2rem .8rem; cursor: pointer; }
-      .hero { width: min(1100px, calc(100% - 3rem)); min-height: calc(100vh - 4.5rem); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: clamp(2rem, 5vw, 5rem); }
-      .copy { position: relative; z-index: 1; }
-      .eyebrow { margin: 0 0 1rem; color: #9ce6f7; font-size: 1.25rem; letter-spacing: .15em; text-transform: uppercase; }
-      h1 { margin: 0; font-size: clamp(4rem, 8.5vw, 6.75rem); line-height: .8; }
-      .tagline { max-width: 28rem; margin: 2rem 0 2.5rem; font-size: clamp(2rem, 3.3vw, 2.7rem); line-height: 1.05; color: #bdd5dc; }
-      .waitlist-intro { margin: 0 0 .8rem; font-size: 1.45rem; color: #9ce6f7; }
-      .waitlist { display: flex; gap: .6rem; max-width: 30rem; }
-      .waitlist input { flex: 1; min-width: 0; font: inherit; font-size: 1.5rem; color: #fff; background: #071b29; border: 2px solid #69bed0; border-radius: .45rem; padding: .5rem .8rem; }
-      .waitlist input::placeholder { color: #7b9daa; }
-      .waitlist button { font: inherit; font-size: 1.5rem; color: #0b1722; background: #a9eaf7; border: 0; border-radius: .45rem; padding: .65rem 1.15rem; cursor: pointer; }
-      .waitlist button:hover { background: #d1f7ff; }
-      .waitlist button:disabled { opacity: .6; cursor: wait; }
-      .waitlist-status { min-height: 1.6rem; margin: .7rem 0 0; font-size: 1.35rem; color: #bdd5dc; }
-      .waitlist-status.error { color: #ffb9af; }
-      .invite { margin: 1rem 0 0; font-size: 1.35rem; color: #bdd5dc; }
-      .invite a { color: #a9eaf7; }
-      .award-card { --sensor-color: #3ecf8e; display: flex; align-items: center; gap: .8rem; width: fit-content; max-width: 100%; margin-top: 1.4rem; padding: .6rem .9rem .6rem .7rem; color: #f4f9fa; text-decoration: none; background: #102838; border: 3px solid var(--sensor-color); box-shadow: 6px 6px 0 #071724; }
-      .award-card:hover { background: #12333f; }
-      .award-card .kind-badge { width: 2.8rem; height: 2.8rem; }
-      .award-card .kind-badge svg { width: 1.8rem; height: 1.8rem; }
-      .award-card small { display: block; font-size: 1.1rem; letter-spacing: .15em; color: var(--sensor-color); text-transform: uppercase; }
-      .award-card strong { display: block; font-size: 1.5rem; font-weight: 400; line-height: 1; }
-      .award-card .arrow { color: var(--sensor-color); font-size: 1.4rem; }
-      .scroll-cue { display: inline-block; margin-top: 1.6rem; font-size: 1.45rem; color: #a9eaf7; text-decoration: none; }
-      .scroll-cue:hover { color: #d1f7ff; }
-      a:focus-visible, button:focus-visible, input:focus-visible, video:focus-visible { outline: 3px solid white; outline-offset: 4px; }
-      .section { width: min(1100px, calc(100% - 3rem)); margin: 0 auto; padding: 4rem 0; }
-      .section h2 { margin: 0 0 1rem; font-size: clamp(3rem, 6vw, 4.6rem); font-weight: 400; line-height: .95; }
-      .lede { max-width: 44rem; margin: 0 0 2rem; font-size: 1.6rem; line-height: 1.15; color: #bdd5dc; }
-      .video-frame { border: 4px solid #3f8ea3; background: #102838; box-shadow: 10px 10px 0 #071724; }
-      .video-frame video { display: block; width: 100%; height: auto; }
-      .use-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; }
-      .use-card { display: flex; flex-direction: column; gap: .7rem; padding: 1.4rem; background: #102838; border: 3px solid var(--sensor-color); box-shadow: 8px 8px 0 #071724; }
-      .use-head { display: flex; align-items: center; gap: .9rem; }
-      .use-kind { font-size: 1.15rem; letter-spacing: .15em; color: var(--sensor-color); text-transform: uppercase; }
-      .use-card h3 { margin: 0; font-size: 2.1rem; font-weight: 400; line-height: 1; }
-      .use-card p { margin: 0; font-size: 1.4rem; line-height: 1.15; color: #bdd5dc; }
-      .use-card .ask { margin-top: auto; padding: .4rem .7rem; font-size: 1.35rem; color: #d8f9ff; background: #0b1f2b; border: 2px solid #3f8ea3; }
-      .use-card .ask span, .use-card .alert span { color: #7b9daa; letter-spacing: .1em; }
-      .use-card .alert { font-size: 1.35rem; color: var(--sensor-color); }
-      .kind-badge { display: inline-grid; place-items: center; flex: none; width: 3rem; height: 3rem; border: 3px solid var(--sensor-color); color: var(--sensor-color); background: #0b1f2b; }
-      .kind-badge svg { width: 1.9rem; height: 1.9rem; fill: currentColor; }
-      .kind-badge .icon-cutout { fill: #0b1f2b; }
-      .uses-more { margin: 2rem 0 0; font-size: 1.45rem; color: #bdd5dc; }
-      .closing { padding-bottom: 6rem; text-align: center; }
-      .closing a { display: inline-block; margin-top: .6rem; font-size: 1.6rem; color: #0b1722; background: #a9eaf7; padding: .65rem 1.3rem; border-radius: .45rem; text-decoration: none; }
-      .closing a:hover { background: #d1f7ff; }
-      .flow { display: grid; grid-template-columns: minmax(0, 1fr) 6rem minmax(0, 1.05fr) 6rem minmax(0, 1fr); align-items: center; margin: 1rem 0 2.5rem; }
-      .flow-col { display: grid; gap: .9rem; }
-      .flow-label { margin: 0 0 .2rem; font-size: 1.15rem; letter-spacing: .2em; color: #9ce6f7; text-transform: uppercase; }
-      .node { display: flex; align-items: center; gap: .8rem; padding: .7rem .8rem; background: #102838; border: 3px solid var(--sensor-color); box-shadow: 6px 6px 0 #071724; }
-      .node .kind-badge { width: 2.8rem; height: 2.8rem; }
-      .node .kind-badge svg { width: 1.8rem; height: 1.8rem; }
-      .node strong { display: block; font-size: 1.6rem; font-weight: 400; line-height: 1; color: #f4f9fa; }
-      .node small { font-size: 1.15rem; color: #8fb3bf; }
-      .wire { position: relative; align-self: stretch; min-height: 12rem; }
-      .wire::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 4px; margin-top: -2px; background: repeating-linear-gradient(90deg, #3f8ea3 0 8px, transparent 8px 14px); }
-      .packet { position: absolute; top: 50%; left: 0; width: 10px; height: 10px; margin-top: -5px; background: #a9eaf7; box-shadow: 0 0 0 2px #0b1722; animation: packet-right 2.4s steps(12, end) infinite; }
-      .packet.back { background: #ffd166; animation-name: packet-left; animation-delay: -1.2s; }
-      @keyframes packet-right { from { left: 0; } to { left: calc(100% - 10px); } }
-      @keyframes packet-left { from { left: calc(100% - 10px); } to { left: 0; } }
-      @keyframes packet-down { from { top: 0; } to { top: calc(100% - 10px); } }
-      @keyframes packet-up { from { top: calc(100% - 10px); } to { top: 0; } }
-      .core { position: relative; padding: 1.6rem 1.2rem 1.3rem; text-align: center; background: #0e2433; border: 4px solid #a9eaf7; box-shadow: 10px 10px 0 #071724; }
-      .core .core-lock { position: absolute; top: -1.6rem; right: -1.2rem; --sensor-color: #a9eaf7; }
-      .core img { width: 6rem; image-rendering: pixelated; animation: core-bob 1.2s steps(2, end) infinite alternate; }
-      @keyframes core-bob { to { transform: translateY(-6px); } }
-      .core h3 { margin: .3rem 0 .1rem; font-size: 2.6rem; font-weight: 400; line-height: 1; }
-      .core > p { margin: 0 0 .9rem; font-size: 1.25rem; letter-spacing: .12em; color: #9ce6f7; text-transform: uppercase; }
-      .core ul { display: grid; gap: .45rem; margin: 0; padding: 0; list-style: none; }
-      .core li { padding: .3rem .6rem; font-size: 1.35rem; color: #d8f9ff; text-align: left; background: #0b1f2b; border: 2px solid #3f8ea3; }
-      .core li::before { content: "▸ "; color: #a9eaf7; }
-      .connect-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; margin: 0; padding: 0; list-style: none; }
-      .connect-steps li { padding: 1.1rem 1.2rem; background: #102838; border: 3px solid #3f8ea3; }
-      .connect-steps .n { font-size: 1.15rem; letter-spacing: .2em; color: #9ce6f7; }
-      .connect-steps h3 { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: .3rem 0 .5rem; font-size: 2rem; font-weight: 400; line-height: 1; }
-      .status { padding: .1rem .45rem; font-size: 1rem; letter-spacing: .12em; text-transform: uppercase; border: 2px solid; }
-      .status.live { color: #9be07a; }
-      .status.soon { color: #ffd166; }
-      .connect-steps p { margin: 0; font-size: 1.4rem; line-height: 1.15; color: #bdd5dc; }
-      .connect-steps code { font-family: monospace; font-size: .85rem; color: #a9eaf7; overflow-wrap: anywhere; }
-      .fine-print { margin: 1.4rem 0 0; font-size: 1.15rem; line-height: 1.2; color: #7b9daa; }
-      .ent-points { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; margin: 2rem 0 0; padding: 0; list-style: none; }
-      .ent-points li { padding-left: 1rem; border-left: 3px solid #3f8ea3; font-size: 1.4rem; line-height: 1.15; color: #bdd5dc; }
-      .ent-points strong { display: block; font-weight: 400; font-size: 1.6rem; color: #f4f9fa; }
-      .business { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 2rem; margin-top: 3rem; padding: 2rem; background: #102838; border: 4px solid #3f8ea3; box-shadow: 10px 10px 0 #071724; }
-      .business h3 { margin: 0 0 .8rem; font-size: 2.6rem; font-weight: 400; line-height: 1; }
-      .business p { margin: 0; font-size: 1.45rem; line-height: 1.15; color: #bdd5dc; }
-      .business form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-      .business label { display: block; margin-bottom: .35rem; font-size: 1.3rem; color: #d8f9ff; }
-      .business .wide { grid-column: 1 / -1; }
-      .business input, .business textarea { width: 100%; font: inherit; font-size: 1.45rem; color: #fff; background: #071b29; border: 2px solid #69bed0; border-radius: 0; padding: .45rem .7rem; }
-      .business textarea { resize: vertical; min-height: 5.5rem; }
-      .business input::placeholder, .business textarea::placeholder { color: #7b9daa; }
-      .business button { justify-self: start; font: inherit; font-size: 1.5rem; color: #0b1722; background: #a9eaf7; border: 0; border-radius: .45rem; padding: .6rem 1.2rem; cursor: pointer; }
-      .business button:hover { background: #d1f7ff; }
-      .business button:disabled { opacity: .6; cursor: wait; }
-      .business .form-status { min-height: 1.6rem; font-size: 1.35rem; color: #bdd5dc; }
-      .business .form-status.error { color: #ffb9af; }
-      .dim { color: #7b9daa; }
-      .closing p { margin: 1.4rem 0 0; font-size: 1.45rem; color: #bdd5dc; }
-      .closing p a { display: inline; margin: 0; padding: 0; font-size: inherit; color: #a9eaf7; background: none; text-decoration: underline; }
-      .closing p a:hover { background: none; color: #d1f7ff; }
-      .site-footer { position: relative; z-index: 1; width: min(1100px, calc(100% - 3rem)); margin: 0 auto; padding: 1.5rem 0 2.5rem; border-top: 2px solid #1a4050; display: flex; flex-wrap: wrap; justify-content: space-between; gap: .6rem 1.5rem; font-size: 1.35rem; color: #9fbfc8; }
-      .site-footer nav { display: flex; gap: 1.5rem; }
-      .site-footer a { color: #a9eaf7; }
-      textarea:focus-visible { outline: 3px solid white; outline-offset: 4px; }
-      @media (max-width: 1000px) { .use-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-      @media (max-width: 860px) {
-        .nav-toggle { display: block; }
-        .nav-links { display: none; position: absolute; top: 100%; left: -1.5rem; right: -1.5rem; flex-direction: column; align-items: stretch; gap: 0; padding: .4rem 1.5rem 1.2rem; background: #0b1722; border-bottom: 2px solid #1a4050; }
-        .nav-links.open { display: flex; }
-        .nav-links a { display: block; padding: .7rem 0; }
-        .nav-links .nav-cta { margin-top: .5rem; text-align: center; }
-        .business { grid-template-columns: 1fr; }
-        .ent-points { grid-template-columns: 1fr; }
-        .connect-steps { grid-template-columns: 1fr; }
-        .flow { grid-template-columns: 1fr; }
-        .flow-col { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
-        .flow-label { grid-column: 1 / -1; text-align: center; }
-        .node { flex-direction: column; gap: .4rem; padding: .7rem .4rem; text-align: center; }
-        .node small { display: none; }
-        .node strong { font-size: 1.35rem; }
-        .wire { min-height: 4.5rem; }
-        .wire::before { left: 50%; right: auto; top: 0; bottom: 0; width: 4px; height: auto; margin: 0 0 0 -2px; background: repeating-linear-gradient(180deg, #3f8ea3 0 8px, transparent 8px 14px); }
-        .packet { left: 50%; top: 0; margin: 0 0 0 -5px; animation-name: packet-down; }
-        .packet.back { left: 50%; animation-name: packet-up; }
-        .core .core-lock { right: .6rem; }
-      }
-      .stage { position: relative; display: grid; place-items: center; min-height: 480px; isolation: isolate; }
-      .pixel-halo { position: absolute; z-index: -1; width: min(100%, 490px); height: auto; image-rendering: pixelated; }
-      .mascot-runner { width: min(100%, 450px); animation: scurry 3s ease-in-out infinite; }
-      .mascot { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(8px 12px 0 #071724); image-rendering: pixelated; }
-      .tentacle-left { animation: step-left .3s steps(2, end) infinite alternate; }
-      .tentacle-right { animation: step-right .3s steps(2, end) infinite alternate; }
-      .spark { fill: #d7fbff; animation: twinkle 2s steps(2, end) infinite alternate; }
-      .spark:nth-of-type(2) { animation-delay: .7s; }
-      @keyframes scurry { 0%, 100% { transform: translate(-18px, 0) rotate(-2deg); } 50% { transform: translate(18px, -9px) rotate(2deg); } }
-      @keyframes step-left { to { transform: translateY(5px); } }
-      @keyframes step-right { to { transform: translateY(-5px); } }
-      @keyframes twinkle { to { opacity: .25; } }
-      @media (max-width: 720px) {
-        .hero { grid-template-columns: 1fr; gap: 0; min-height: 0; padding: 4rem 0 3rem; text-align: center; }
-        .section { padding: 3rem 0; }
-        .use-grid { grid-template-columns: 1fr; }
-        .business { padding: 1.4rem; }
-        .business form { grid-template-columns: 1fr; }
-        .stage { grid-row: 1; min-height: 310px; }
-        .mascot-runner { width: min(76vw, 320px); }
-        .copy { grid-row: 2; }
-        .tagline { margin: 1.2rem auto 2rem; }
-        .waitlist { margin: 0 auto; flex-direction: column; }
-        .award-card { margin-left: auto; margin-right: auto; text-align: left; }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .mascot-runner, .tentacle-left, .tentacle-right, .spark { animation: none; }
-        html { scroll-behavior: auto; }
-        .packet { display: none; }
-        .core img { animation: none; }
-      }
-    </style>
+    <script src="/landing.js" defer></script>
+    <link rel="canonical" href="https://fizzlayer.com/">
+
   </head>
   <body>
-    <div class="pixel-sky" aria-hidden="true">
-      <span class="shooting-star shooting-star-one"></span>
-      <span class="shooting-star shooting-star-two"></span>
-      <span class="shooting-star shooting-star-three"></span>
-    </div>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <a class="announcement" href="https://hackathon.supabase.com/supabase-select-2026-hackathon/teams/7c144db2-dee5-42a7-9aaa-5348143c3a06" target="_blank" rel="noopener"><span class="award-star" aria-hidden="true">✧</span><strong>Winner, Supabase Select 2026 Hackathon</strong><span>Meet the project</span><span aria-hidden="true">↗</span><span class="visually-hidden"> (opens in a new tab)</span></a>
     <header class="site-nav">
-      <nav aria-label="Main">
-        <a class="nav-logo" href="#top" aria-label="Fizzlayer, back to top">Fizzlayer<span>.</span></a>
-        <button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+      <nav class="container" aria-label="Main">
+        <a class="wordmark" href="/" aria-label="Fizzlayer home"><img src="/fizz-agent.svg" alt="" width="35" height="35"><span>Fizzlayer<span class="brand-dot">.</span></span></a>
+        <button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu <span aria-hidden="true">☰</span></button>
         <ul class="nav-links" id="nav-links">
-          <li><a href="#demo">Demo</a></li>
-          <li><a href="#connect">How it works</a></li>
+          <li><a href="#connect">Platform</a></li>
           <li><a href="#use-cases">Use cases</a></li>
+          <li><a href="#demo">Demo</a></li>
           <li><a href="#enterprise">Enterprise</a></li>
-          <li><a href="/app.html#sign-in">Sign in</a></li>
-          <li><a class="nav-cta" href="#join">Join waitlist</a></li>
+          <li><a class="nav-sign-in" href="/app.html#sign-in">Sign in <span aria-hidden="true">↗</span></a></li>
+          <li><a class="button button-dark nav-cta" href="#join">Get early access <span aria-hidden="true">→</span></a></li>
         </ul>
       </nav>
     </header>
-    <main>
-      <section class="hero" id="top">
-        <div class="copy" id="join">
-          <p class="eyebrow">Meet Fizz, your new sidekick</p>
-          <h1>Fizzlayer.</h1>
-          <p class="tagline">The physical layer for AI agents.</p>
-          <p class="waitlist-intro">Fizzlayer is invite-only for now. Join the waitlist.</p>
-          <form class="waitlist" id="waitlist" novalidate>
-            <label class="visually-hidden" for="waitlist-email">Email address</label>
-            <input id="waitlist-email" name="email" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com">
-            <button type="submit">Join the waitlist</button>
-          </form>
-          <p class="waitlist-status" id="waitlist-status" role="status" aria-live="polite"></p>
-          <p class="invite">Have an invite? <a href="/app.html">Create your account</a> · <a href="/app.html#sign-in">Sign in</a></p>
-          <a class="award-card" href="https://hackathon.supabase.com/supabase-select-2026-hackathon/teams/7c144db2-dee5-42a7-9aaa-5348143c3a06" target="_blank" rel="noopener">
-            <span class="kind-badge"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M9 0h2v1h-2zM8 1h3v1h-3zM7 2h4v1h-4zM6 3h5v1h-5zM5 4h6v1h-6zM4 5h7v1h-7zM3 6h8v1h-8zM2 7h9v1h-9z"/><path fill="#249361" d="M5 8h9v1h-9zM5 9h8v1h-8zM5 10h7v1h-7zM5 11h6v1h-6zM5 12h5v1h-5zM5 13h4v1h-4zM5 14h3v1h-3zM5 15h2v1h-2z"/></svg></span>
-            <span><small>Winner</small><strong>Supabase Select 2026 Hackathon</strong></span>
-            <span class="arrow" aria-hidden="true">↗</span><span class="visually-hidden"> (opens in a new tab)</span>
-          </a>
-          <a class="scroll-cue" href="#demo">Watch the 2-minute demo ↓</a>
-        </div>
-        <div class="stage">
-          <svg class="pixel-halo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="crispEdges">
-            <path fill="#122d3d" d="M28 2h44v4h12v4h6v6h4v12h4v44h-4v12h-4v6h-6v4H72v4H28v-4H16v-4h-6v-6H6V72H2V28h4V16h4v-6h6V6h12z"/>
-            <path fill="#1a4050" d="M28 10h44v4h10v4h4v10h4v44h-4v10h-4v4H72v4H28v-4H18v-4h-4V72h-4V28h4V18h4v-4h10z"/>
-            <path fill="#102838" d="M30 18h40v4h10v8h4v40h-4v8H70v4H30v-4H20v-8h-4V30h4v-8h10z"/>
-          </svg>
-          <div class="mascot-runner">
-            <svg class="mascot" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="fizz-title fizz-desc" shape-rendering="crispEdges">
-              <title id="fizz-title">Fizz the pixel mascot</title>
-              <desc id="fizz-desc">A friendly light blue creature with two dark block eyes and four little scurrying tentacles.</desc>
-              <path class="spark" d="M8 17h3v-3h2v3h3v2h-3v3h-2v-3H8z"/>
-              <path class="spark" d="M66 8h2V5h2v3h3v2h-3v3h-2v-3h-2z"/>
-              <path class="spark" d="M70 48h3v-3h2v3h3v2h-3v3h-2v-3h-3z"/>
-              <g class="tentacle-left" fill="#599cb5">
-                <path d="M22 52h10v10h-3v8h-8v-5h-3v-6h4z"/>
-                <path d="M43 54h9v11h-3v6h-8v-5h-3v-7h5z"/>
-              </g>
-              <g class="tentacle-right" fill="#80d7e9">
-                <path d="M32 55h9v9h-3v8h-8v-6h-3v-7h5z"/>
-                <path d="M53 52h8v8h-3v9h-8v-6h-3v-7h6z"/>
-              </g>
-              <path fill="#387991" d="M24 10h32v3h8v5h5v8h3v23h-3v7h-5v5h-8v3H24v-3h-8v-5h-5v-7H8V26h3v-8h5v-5h8z"/>
-              <path fill="#a9eaf7" d="M24 13h32v3h8v5h4v8h3v17h-3v8h-5v5h-8v3H25v-3h-8v-5h-5v-8H9V29h3v-8h5v-5h7z"/>
-              <path fill="#d8f9ff" d="M24 16h25v3H22v3h-5v5h-4v13h-1V29h3v-8h6v-3h3z"/>
-              <path fill="#82d4e9" d="M61 25h5v6h3v15h-3v7h-5v5h-8v3H30v-3h23v-3h8v-5h4v-8h2V31h-6z"/>
-              <path fill="#153849" d="M25 37h8v9h-8zm23 0h8v9h-8z"/>
-            </svg>
+    <main id="main-content">
+      <div class="hero-wrap">
+        <section class="hero container" id="top" aria-labelledby="hero-title">
+          <div class="hero-copy" id="join">
+            <p class="eyebrow-label"><span class="status-dot" aria-hidden="true"></span> The physical layer for AI agents</p>
+            <h1 id="hero-title">Your AI.<br>Connected to<br><span>the real world.</span></h1>
+            <p class="hero-description">Give your agents a sense of what's happening.<br>Connect sensors, understand your environment, and <strong>act on what matters.</strong> Meet Fizzlayer.</p>
+            <form class="waitlist" id="waitlist" novalidate>
+              <label class="visually-hidden" for="waitlist-email">Email address</label>
+              <input id="waitlist-email" name="email" type="email" autocomplete="email" maxlength="254" required placeholder="Enter your email">
+              <button class="button button-dark" type="submit">Join the waitlist <span aria-hidden="true">→</span></button>
+            </form>
+            <p class="waitlist-status" id="waitlist-status" role="status" aria-live="polite"></p>
+            <p class="invite">Currently invite-only. Already have an invite? <a href="/app.html">Get started</a></p>
+            <a class="hero-secondary" href="#demo"><span class="play-icon" aria-hidden="true">▶</span> See Fizzlayer in action <span aria-hidden="true">↗</span></a>
           </div>
-        </div>
-      </section>
-      <section class="section demo" id="demo" aria-labelledby="demo-title">
-        <p class="eyebrow">See it in action</p>
-        <h2 id="demo-title">Fizzlayer in two minutes.</h2>
-        <p class="lede">A walkthrough of the live app: pick sensors, watch readings stream in, ask Fizz what it sees, and get called when a reading crosses the line.</p>
-        <div class="video-frame">
-          <video controls preload="metadata" playsinline poster="/fizz-demo-poster.jpg" width="1920" height="1080">
-            <source src="/fizz-demo.mp4" type="video/mp4">
-            <track kind="captions" src="/fizz-demo.vtt" srclang="en" label="English">
-            Your browser cannot play this video. <a href="/fizz-demo.mp4">Download the demo</a>.
-          </video>
-        </div>
-      </section>
-      <section class="section connect" id="connect" aria-labelledby="connect-title">
-        <p class="eyebrow">How it connects</p>
-        <h2 id="connect-title">The secure layer between agents and hardware.</h2>
-        <p class="lede">A Raspberry Pi pairs with one command and a short code you approve on the device. Agents like Hermes connect over MCP and ask Fizzlayer, never your devices directly.</p>
-        <div class="flow" role="img" aria-label="Diagram: AI agents such as Hermes and Muse connect to Fizzlayer, which handles pairing and authorization, and Fizzlayer connects to devices such as Raspberry Pi and ESP32 boards.">
-          <div class="flow-col" aria-hidden="true">
-            <p class="flow-label">AI agents</p>
-            <div class="node" style="--sensor-color:#ffd166"><span class="kind-badge"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M14 1h2v1h-2zM12 2h4v1h-4zM11 3h5v1h-5zM10 4h5v1h-5zM9 5h5v1h-5zM9 6h4v1h-4zM3 5h6v1h-6zM2 6h7v1h-7zM1 7h12v4h-12zM0 11h14v2h-14z"/><path class="icon-cutout" d="M14 2h1v1h-1zM13 3h1v1h-1zM12 4h1v1h-1zM11 5h1v1h-1zM1 9h10v1h-10z"/></svg></span><span><strong>Hermes</strong><small>Nous Research</small></span></div>
-            <div class="node" style="--sensor-color:#ff9ed2"><span class="kind-badge"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M1 1h2v1h-2zM2 2h2v2h-2zM3 4h2v7h-2zM13 1h2v1h-2zM12 2h2v2h-2zM11 4h2v7h-2zM3 4h10v1h-10zM3 11h10v2h-10zM4 13h8v1h-8zM6 5h1v6h-1zM9 5h1v6h-1z"/><path class="icon-cutout" d="M6 12h4v1h-4z"/></svg></span><span><strong>Muse</strong><small>Meta</small></span></div>
-            <div class="node" style="--sensor-color:#c79bff"><span class="kind-badge"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M7 0h2v1h-2zM7 1h2v2h-2zM2 3h12v9h-12zM0 6h2v3h-2zM14 6h2v3h-2zM5 12h6v1h-6zM3 13h10v2h-10z"/><path class="icon-cutout" d="M4 6h3v2h-3zM9 6h3v2h-3zM5 9h6v1h-6z"/></svg></span><span><strong>Your agent</strong><small>Any LLM</small></span></div>
+          <div class="world-visual" aria-label="Illustrative example: temperature, water and humidity sensors connect to Fizzlayer and an AI agent.">
+            <div class="world-frame">
+              <div class="world-topline"><span>YOUR WORLD, CONNECTED</span><span><span class="status-dot" aria-hidden="true"></span> ILLUSTRATIVE DEMO</span></div>
+              <svg class="world-lines" viewBox="0 0 500 400" aria-hidden="true">
+                <ellipse class="orbit" cx="250" cy="190" rx="175" ry="140"/><ellipse class="orbit" cx="250" cy="190" rx="125" ry="100"/>
+                <path class="connection" d="M120 100 250 170 395 120 M110 290 250 170 400 290"/>
+                <circle cx="177" cy="131" r="3" fill="#a9eaf7"/><circle cx="323" cy="145" r="3" fill="#a9eaf7"/><circle cx="157" cy="250" r="3" fill="#5ee6c4"/><circle cx="341" cy="243" r="3" fill="#bcb7f4"/>
+              </svg>
+              <div class="world-core"><img src="/fizz-agent.svg" alt="Fizz, your pixel mascot" width="120" height="120"></div>
+              <div class="core-label">A little Fizz. A lot of awareness.<small>Your physical AI layer</small></div>
+              <div class="signal-node signal-temp" data-signal="temperature"><span><strong>22.4 °C</strong>Temperature</span></div>
+              <div class="signal-node signal-water" data-signal="water"><span><strong>0.0 L/min</strong>Water flow</span></div>
+              <div class="signal-node signal-humidity" data-signal="humidity"><span><strong>48.2 %</strong>Humidity</span></div>
+              <div class="signal-node signal-agent"><span class="agent-symbol" aria-hidden="true">⌘</span><span><strong>Your AI agent</strong>Connected via MCP</span></div>
+              <div class="visual-bottom"><span>DEVICE → SIGNAL → UNDERSTANDING</span><span>POWERED BY FIZZ</span></div>
+            </div>
+            <div class="visual-notification"><span class="notification-mark"><img src="/fizz-agent.svg" alt="" width="28" height="28"></span><div class="notification-copy"><strong>“How's the greenhouse doing?”</strong><p>22.4 °C and 48.2% humidity. Here's what your sensors are seeing.</p></div><span>EXAMPLE</span></div>
           </div>
-          <div class="wire" aria-hidden="true"><span class="packet"></span><span class="packet back"></span></div>
-          <div class="core" aria-hidden="true">
-            <span class="kind-badge core-lock"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M5 1h6v2h-6zM4 2h2v5h-2zM10 2h2v5h-2zM2 7h12v8h-12z"/><path class="icon-cutout" d="M7 9h2v4h-2zM6 9h4v2h-4z"/></svg></span>
-            <img src="/fizz-agent.svg" alt="">
-            <h3>Fizzlayer</h3>
-            <p>Pairing + authorization</p>
-            <ul><li>Pair with a code</li><li>Approve on the device</li><li>Revoke in one click</li></ul>
-          </div>
-          <div class="wire" aria-hidden="true"><span class="packet back"></span><span class="packet"></span></div>
-          <div class="flow-col" aria-hidden="true">
-            <p class="flow-label">Devices</p>
-            <div class="node" style="--sensor-color:#ff7b6b"><span class="kind-badge"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M0 2h16v12h-16z"/><path class="icon-cutout" d="M1 3h1v1h-1zM3 3h1v1h-1zM5 3h1v1h-1zM7 3h1v1h-1zM9 3h1v1h-1zM11 3h1v1h-1zM4 7h5v5h-5zM14 6h2v2h-2zM14 10h2v2h-2zM1 12h1v1h-1z"/><path d="M5 8h3v3h-3z"/></svg></span><span><strong>Raspberry Pi</strong><small>Linux boards</small></span></div>
-            <div class="node" style="--sensor-color:#5ee6c4"><span class="kind-badge"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M3 0h10v16h-10z"/><path class="icon-cutout" d="M4 1h1v3h-1zM4 1h3v1h-3zM6 1h1v3h-1zM6 3h3v1h-3zM8 1h1v3h-1zM8 1h3v1h-3zM10 1h1v3h-1zM5 6h6v5h-6zM3 6h1v1h-1zM3 8h1v1h-1zM3 10h1v1h-1zM3 12h1v1h-1zM12 6h1v1h-1zM12 8h1v1h-1zM12 10h1v1h-1zM12 12h1v1h-1zM6 14h4v2h-4z"/><path d="M6 7h4v3h-4z"/></svg></span><span><strong>ESP32</strong><small>Wi-Fi microcontrollers</small></span></div>
-            <div class="node" style="--sensor-color:#5cc8ff"><span class="kind-badge"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M3 3h10v10h-10zM4 1h1v2h-1zM7 1h2v2h-2zM11 1h1v2h-1zM4 13h1v2h-1zM7 13h2v2h-2zM11 13h1v2h-1zM1 4h2v1h-2zM1 7h2v2h-2zM1 11h2v1h-2zM13 4h2v1h-2zM13 7h2v2h-2zM13 11h2v1h-2z"/><path class="icon-cutout" d="M5 5h6v6h-6z"/><path d="M6 6h4v4h-4z"/></svg></span><span><strong>Any device</strong><small>Anything with HTTPS</small></span></div>
-          </div>
-        </div>
+        </section>
+        <div class="capability-strip container"><p>From your first sensor<br>to your next AI agent.</p><div class="capability-list"><span>↳ Raspberry Pi</span><span>⌁ ESP32</span><span>▯ Your phone</span><span>⟷ Any HTTPS device</span><span>⌘ MCP compatible</span></div></div>
+      </div>
+      <section class="section connect container" id="connect" aria-labelledby="connect-title">
+        <div class="section-intro"><div><p class="eyebrow-label">01 / One connected layer</p><h2 id="connect-title">From physical signals<br>to useful intelligence.</h2></div><p class="lede">Your hardware speaks in readings. Your agents work in context. Fizzlayer brings them together, securely.</p></div>
         <ol class="connect-steps">
-          <li><span class="n">01</span><h3>Pair <span class="status live">Live</span></h3><p>On a Pi, run <code>curl -fsSL https://fizzlayer.com/install.sh | sh</code>, then <code>fizz pair</code>, and approve the request there. ESP32s post to the same webhook with a sensor key.</p></li>
-          <li><span class="n">02</span><h3>Authorize <span class="status live">Live</span></h3><p>Every request is checked against that device's key. Rotate or revoke one device without touching the rest.</p></li>
-          <li><span class="n">03</span><h3>Connect agents <span class="status live">Live</span></h3><p>Hermes, Claude Code, and other MCP clients connect with their own revocable token. They read sensors and pair devices, and never see device keys.</p></li>
+          <li><span class="step-number">01</span><h3>Connect your world.</h3><p>Pair a Raspberry Pi, an ESP32, or your phone. Bring any sensor that sends data over HTTPS, or start exploring with sample streams.</p><span class="step-meta">YOUR HARDWARE. YOUR CHOICE.</span></li>
+          <li><span class="step-number">02</span><h3>Give your agents context.</h3><p>Ask Fizz in plain English or connect your own agent over MCP. Get answers grounded in your actual sensor readings.</p><span class="step-meta">REAL SIGNALS. CLEAR ANSWERS.</span></li>
+          <li><span class="step-number">03</span><h3>Know when it matters.</h3><p>Set a threshold in the dashboard or ask Fizz to create one. Get a phone call when a reading crosses the line.</p><span class="step-meta">LESS WATCHING. MORE KNOWING.</span></li>
         </ol>
-        <p class="fine-print">Hermes Agent is an open-source project by Nous Research. Muse is a product of Meta. Fizzlayer is not affiliated with either. Agents connect through Fizzlayer's MCP server with a bearer token; Muse support depends on the connector options Meta offers.</p>
+        <div class="connection-band" aria-label="Your devices connect through Fizzlayer to your agents"><span>Your devices</span><span class="flow-arrow" aria-hidden="true">⟷</span><strong><img src="/fizz-agent.svg" alt="" width="34" height="34">Fizzlayer</strong><span class="flow-arrow" aria-hidden="true">⟷</span><span>Your agents</span></div>
       </section>
-      <section class="section uses" id="use-cases" aria-labelledby="uses-title">
-        <p class="eyebrow">Use cases</p>
-        <h2 id="uses-title">Watch the places you can't.</h2>
-        <p class="lede">Give Fizz a sensor and a limit. Ask about it in plain English, and get a phone call when something goes wrong.</p>
-        <div class="use-grid">
-          <article class="use-card" style="--sensor-color:#5cc8ff" data-kind="water">
-            <div class="use-head"><span class="use-kind">Flow · L/min</span></div>
-            <h3>Basement leak watch</h3>
-            <p>A flow sensor on the main line. Water moving at 3 AM when nobody is up means a leak, and Fizz calls you while it is still a puddle.</p>
-            <p class="ask"><span>ASK</span> “Was there any water flow overnight?”</p>
-            <p class="alert"><span>ALERT</span> Call me if flow is above 0.5 L/min</p>
-          </article>
-          <article class="use-card" style="--sensor-color:#9be07a" data-kind="gas">
-            <div class="use-head"><span class="use-kind">Gas · ppm</span></div>
-            <h3>Garage air check</h3>
-            <p>A second set of eyes beside your detector, near the furnace or workbench. Fizz keeps the history and calls when concentration climbs.</p>
-            <p class="ask"><span>ASK</span> “Did the garage air spike today?”</p>
-            <p class="alert"><span>ALERT</span> Call me if gas is above 1,000 ppm</p>
-          </article>
-          <article class="use-card" style="--sensor-color:#ff7b6b" data-kind="temperature">
-            <div class="use-head"><span class="use-kind">Temperature · °C</span></div>
-            <h3>Server closet heat</h3>
-            <p>A probe by the rack. When the AC quits on a Saturday, Fizz calls before your hardware starts to throttle.</p>
-            <p class="ask"><span>ASK</span> “What's the closet temperature right now?”</p>
-            <p class="alert"><span>ALERT</span> Call me if it is above 30 °C</p>
-          </article>
-          <article class="use-card" style="--sensor-color:#5ee6c4" data-kind="humidity">
-            <div class="use-head"><span class="use-kind">Humidity · %</span></div>
-            <h3>Greenhouse and grow rooms</h3>
-            <p>Know how your plants are doing before you drive over. Fizz watches the air where they live.</p>
-            <p class="ask"><span>ASK</span> “Is the greenhouse too dry?”</p>
-            <p class="alert"><span>ALERT</span> Call me if humidity drops below 40%</p>
-          </article>
-          <article class="use-card" style="--sensor-color:#ffa94d" data-kind="sound">
-            <div class="use-head"><span class="use-kind">Sound · dB</span></div>
-            <h3>Nursery and pet room</h3>
-            <p>A sound level sensor in the room. Fizz notices when it gets loud while you are out.</p>
-            <p class="ask"><span>ASK</span> “Has it been quiet in the nursery?”</p>
-            <p class="alert"><span>ALERT</span> Call me if sound is above 70 dB</p>
-          </article>
-          <article class="use-card" style="--sensor-color:#8c9dff" data-kind="phone">
-            <div class="use-head"><span class="use-kind">Phone · no hardware</span></div>
-            <h3>Your phone as a sensor</h3>
-            <p>Pair any phone with a one-time link to share motion, location, and voice notes, each behind its own permission.</p>
-            <p class="ask"><span>ASK</span> “What did my phone say?”</p>
-            <p class="alert"><span>CONTROL</span> Revoke the phone from either device</p>
-          </article>
-        </div>
-        <p class="uses-more">Also: pressure, radio signal strength, and custom metrics from any device that can send an HTTPS request.</p>
+      <section class="section product-section" id="demo" aria-labelledby="demo-title">
+        <div class="container demo-layout"><div><p class="eyebrow-label">02 / Meet your new sidekick</p><h2 id="demo-title">A window into<br>your physical world.</h2><p class="lede">Live readings, meaningful alerts, and an agent that understands the signals. All in one clear workspace.</p><ul class="demo-features"><li>Watch sensor readings as they arrive</li><li>Ask questions in plain English</li><li>Create alerts and get a call</li></ul><a class="button button-dark" href="/app.html">Have an invite? Get started <span aria-hidden="true">→</span></a></div><div><div class="video-frame"><video controls preload="metadata" playsinline poster="/fizz-demo-poster.jpg?v=e0df2eee22d8" width="1920" height="1080">
+            <source src="/fizz-demo.mp4?v=2c2481d5dc91" type="video/mp4">
+            <track kind="captions" src="/fizz-demo.vtt?v=5dd0ba78532a" srclang="en" label="English">
+            Your browser cannot play this video. <a href="/fizz-demo.mp4?v=2c2481d5dc91">Download the demo</a>.
+          </video></div><p class="video-caption">THE PRODUCT WALKTHROUGH · 90 SECONDS</p></div></div>
       </section>
-      <section class="section enterprise" id="enterprise" aria-labelledby="enterprise-title">
-        <p class="eyebrow">Enterprise</p>
-        <h2 id="enterprise-title">Every sensor on site. One agent watching.</h2>
-        <p class="lede">Warehouses, fleets, and factory floors already run on sensors. Fizzlayer gives them one place to ask questions, and calls the right person when a reading crosses the line.</p>
-        <div class="use-grid">
-          <article class="use-card" style="--sensor-color:#ffd166">
-            <div class="use-head"><span class="kind-badge"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M7 1h2v1h-2zM5 2h6v1h-6zM3 3h10v1h-10zM1 4h14v1h-14zM0 5h16v2h-16zM1 7h14v9h-14z"/><path class="icon-cutout" d="M7 3h2v1h-2zM3 9h10v7h-10z"/><path d="M4 13h3v3h-3zM9 13h3v3h-3zM6 10h4v3h-4z"/></svg></span><span class="use-kind">Temperature · humidity · water</span></div>
-            <h3>Warehouses and cold storage</h3>
-            <p>Probes in every cold room, humidity on the racks, and leak sensors at the dock. Fizz watches every zone and calls the shift lead before stock spoils.</p>
-            <p class="ask"><span>ASK</span> “Which cold room is warmest right now?”</p>
-            <p class="alert"><span>ALERT</span> Call the shift lead if a cold room is above 5 °C</p>
-          </article>
-          <article class="use-card" style="--sensor-color:#7ad3ff">
-            <div class="use-head"><span class="kind-badge"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M0 3h10v8h-10zM10 5h3v6h-3zM13 7h2v4h-2zM0 11h15v1h-15zM2 12h3v3h-3zM10 12h3v3h-3z"/><path class="icon-cutout" d="M11 6h2v2h-2zM2 6h6v1h-6zM2 8h4v1h-4zM3 13h1v1h-1zM11 13h1v1h-1z"/></svg></span><span class="use-kind">Phone · temperature · API</span></div>
-            <h3>Logistics and fleets</h3>
-            <p>A driver's phone shares location and motion, and a reefer probe posts temperatures over HTTPS. Each device has its own key, so one truck can be cut off without touching the rest.</p>
-            <p class="ask"><span>ASK</span> “Is truck 12's reefer still under 4 °C?”</p>
-            <p class="alert"><span>ALERT</span> Call dispatch if a reefer is above 4 °C</p>
-          </article>
-          <article class="use-card" style="--sensor-color:#ff8f5e">
-            <div class="use-head"><span class="kind-badge"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M3 5h2v1h-2zM2 6h3v1h-3zM1 7h4v1h-4zM0 8h5v1h-5zM8 5h2v1h-2zM7 6h3v1h-3zM6 7h4v1h-4zM5 8h5v1h-5zM11 2h3v7h-3zM0 9h16v7h-16zM13 0h1v1h-1zM14 0h2v1h-2zM12 1h1v1h-1z"/><path class="icon-cutout" d="M2 11h2v2h-2zM6 11h2v2h-2zM10 11h2v2h-2zM12 13h3v3h-3z"/></svg></span><span class="use-kind">Pressure · sound · gas</span></div>
-            <h3>Factories and plants</h3>
-            <p>Boiler pressure, compressor noise, and air quality on the line. Check the floor from anywhere, and get a call when a machine drifts out of range.</p>
-            <p class="ask"><span>ASK</span> “What's boiler 2 pressure right now?”</p>
-            <p class="alert"><span>ALERT</span> Call maintenance if pressure is above 900 kPa</p>
-          </article>
-        </div>
-        <ul class="ent-points">
-          <li><strong>A key for every device</strong>Rotate or revoke one sensor's API key without touching the others.</li>
-          <li><strong>Try it before install day</strong>Start with simulated streams for each sensor type while hardware is on order.</li>
-          <li><strong>The right person gets the call</strong>Each alert rule calls its own phone number.</li>
-        </ul>
-        <div class="business" id="business">
-          <div>
-            <h3>Bring Fizzlayer to your team</h3>
-            <p>Tell us about your sites and what you need to watch. We'll reach out about early access.</p>
-          </div>
-          <form id="business-form" novalidate>
+      <section class="section uses container" id="use-cases" aria-labelledby="uses-title">
+        <div class="section-intro"><div><p class="eyebrow-label">03 / Grounded in your world</p><h2 id="uses-title">A little more awareness.<br>A lot more peace of mind.</h2></div><p class="lede">From the server closet to the greenhouse, give Fizz a sensor and something to watch for.</p></div>
+        <div class="use-grid"><article class="use-card" data-kind="water"><div class="use-head"><span class="use-kind">WATER · FLOW & LEAKS</span></div><h3>Catch the little leaks.</h3><p>See unexpected water flow before a small problem becomes a big one. Set a threshold and let Fizz keep watch.</p><p class="ask">“Was there any water flow overnight?”</p></article><article class="use-card" data-kind="temperature"><div class="use-head"><span class="use-kind">TEMPERATURE · HEAT & COLD</span></div><h3>Keep your cool.</h3><p>Watch the server closet or cold room from anywhere. Get a call when the temperature crosses your limit.</p><p class="ask">“How warm is the server closet?”</p></article><article class="use-card" data-kind="humidity"><div class="use-head"><span class="use-kind">HUMIDITY · GROWING CONDITIONS</span></div><h3>Give your plants a voice.</h3><p>Keep an eye on the air in your greenhouse and set an alert when humidity drops below your chosen level.</p><p class="ask">“Is the greenhouse too dry?”</p></article><article class="use-card" data-kind="gas"><div class="use-head"><span class="use-kind">GAS · AIR QUALITY</span></div><h3>Know what’s in the air.</h3><p>Track concentration readings in your garage or workshop. Add context and history alongside your existing detectors.</p><p class="ask">“Did the garage air spike today?”</p></article><article class="use-card" data-kind="sound"><div class="use-head"><span class="use-kind">SOUND · ENVIRONMENTAL AWARENESS</span></div><h3>Hear the changes.</h3><p>Monitor sound levels in the spaces that matter. Let Fizz tell you when the noise crosses a threshold.</p><p class="ask">“Has it been quiet in the pet room?”</p></article><article class="use-card" data-kind="phone"><div class="use-head"><span class="use-kind">PHONE · NO EXTRA HARDWARE</span></div><h3>Start with your pocket.</h3><p>Turn your phone into a sensor for motion, location, and voice notes. Each permission stays in your hands.</p><p class="ask">“What did my phone pick up?”</p></article></div>
+        <p class="uses-more">Also supports pressure, radio signal strength, and custom metrics over HTTPS.</p>
+      </section>
+      <section class="section enterprise" id="enterprise" aria-labelledby="enterprise-title"><div class="container enterprise-layout">
+        <div><p class="eyebrow-label">Built for your next chapter</p><h2 id="enterprise-title">Every sensor on site.<br>One agent watching.</h2><p class="lede">Cold storage, logistics, or the factory floor. Bring your signals into one workspace and get the right person on the phone when a threshold is crossed.</p><ul class="ent-points"><li><strong>Control access, device by device.</strong>Separate, revocable keys for your sensors and tokens for your agents.</li><li><strong>Start before install day.</strong>Explore with simulated sensor streams while your hardware is on its way.</li><li><strong>Reach the right person.</strong>Choose a phone number for each alert rule. Fizz makes the call.</li></ul></div>
+        <div class="business" id="business"><h3>Bring Fizzlayer to your team.</h3><p>Tell us what you need to watch. We'll be in touch about early access.</p><form id="business-form" novalidate>
             <div>
               <label for="business-email">Work email</label>
               <input id="business-email" name="email" type="email" autocomplete="email" maxlength="254" required placeholder="you@company.com">
@@ -420,21 +117,12 @@
               <label for="business-interest">What would you like Fizz to watch? <span class="dim">(optional)</span></label>
               <textarea id="business-interest" name="interest" maxlength="500" rows="3" placeholder="e.g. Cold room temperatures across 3 warehouses"></textarea>
             </div>
-            <button type="submit">Request early access</button>
+            <button class="button button-cyan" type="submit">Request early access <span aria-hidden="true">↗</span></button>
             <p class="form-status wide" id="business-status" role="status" aria-live="polite"></p>
-          </form>
-        </div>
-      </section>
-      <section class="section closing" aria-labelledby="closing-title">
-        <h2 id="closing-title">Give your AI agent a body.</h2>
-        <a href="#join">Join the waitlist</a>
-        <p>Running a warehouse, fleet, or plant? <a href="#business">Request early access</a></p>
-      </section>
+          </form></div>
+      </div></section>
+      <section class="section closing container" aria-labelledby="closing-title"><img src="/fizz-agent.svg" alt="" width="58" height="58"><h2 id="closing-title">The world has a lot to say.<br>Give your AI a way to listen.</h2><p>Your sensors. Your agents. A little Fizz in between.</p><a class="button button-dark" href="#join">Join the waitlist <span aria-hidden="true">→</span></a></section>
     </main>
-    <footer class="site-footer">
-      <span>Fizzlayer. The physical layer for AI agents.</span>
-      <nav aria-label="Legal"><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms of Service</a></nav>
-    </footer>
-    <script src="/landing.js"></script>
+    <footer class="site-footer"><div class="container footer-inner"><div class="footer-brand"><a class="wordmark" href="/" aria-label="Fizzlayer home"><img src="/fizz-agent.svg" alt="" width="27" height="27"><span>Fizzlayer<span class="brand-dot">.</span></span></a><span>The physical layer for AI agents.</span></div><nav aria-label="Footer"><a href="/app.html#sign-in">Sign in</a><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms of Service</a></nav></div></footer>
   </body>
 </html>

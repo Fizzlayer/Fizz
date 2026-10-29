@@ -1,18 +1,27 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0b1722">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#f6f9fb">
 <title>Settings · Fizzlayer</title>
 <link rel="icon" href="/fizz-agent.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/sky.css"><link rel="stylesheet" href="/app.css"><link rel="stylesheet" href="/dashboard.css"><link rel="stylesheet" href="/sensors.css"><link rel="stylesheet" href="/settings.css">
+<link rel="stylesheet" href="/design.css">
+<link rel="stylesheet" href="/app.css"><link rel="stylesheet" href="/dashboard.css"><link rel="stylesheet" href="/sensors.css"><link rel="stylesheet" href="/settings.css">
 <script src="/passkey.js" defer></script>
 <script src="/settings.js" defer></script>
+  <link rel="stylesheet" href="/workspace.css">
 </head>
-<body><div class="pixel-sky" aria-hidden="true"><span class="shooting-star shooting-star-one"></span><span class="shooting-star shooting-star-two"></span><span class="shooting-star shooting-star-three"></span></div>
-<main class="shell dashboard-active"><section class="dashboard" aria-labelledby="settings-title">
-  <header class="dashboard-bar"><a class="dashboard-logo" href="/">Fizzlayer<span>.</span></a><nav aria-label="Workspace"><a href="/app.html">Overview</a><a href="/sensors.html">Sensors</a><a href="/agents.html">Agents</a><a class="active" href="/settings.html">Settings</a></nav><div class="dashboard-account"><span id="settings-username"></span><button type="button" id="settings-sign-out">Sign out</button></div></header>
+<body><main class="shell dashboard-active"><section class="dashboard" aria-labelledby="settings-title">
+  <a class="skip-link" href="#workspace-content">Skip to content</a>
+      <header class="dashboard-bar">
+        <a class="dashboard-logo" href="/" aria-label="Fizzlayer home"><img src="/fizz-agent.svg" alt="" width="32" height="32">Fizzlayer<span>.</span></a>
+        <div class="workspace-switch"><span class="workspace-monogram" aria-hidden="true">F</span><div>Personal workspace<small>Fizzlayer early access</small></div></div>
+        <p class="sidebar-label">WORKSPACE</p>
+        <nav aria-label="Workspace"><a href="/app.html"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Overview</a><a href="/sensors.html"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8a11 11 0 0 1 16 0M7 11a7 7 0 0 1 10 0M10 14a3 3 0 0 1 4 0"/><circle cx="12" cy="18" r="1"/></svg>Sensors</a><a href="/agents.html"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="7" width="16" height="13" rx="3"/><path d="M12 3v4M1 12h3m16 0h3M8 12h.01M16 12h.01M9 16h6"/></svg>Agents</a><a class="active" href="/settings.html" aria-current="page"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3-1 3-3 1 1 3-2 2 2 2-1 3 3 1 1 3h6l1-3 3-1-1-3 2-2-2-2 1-3-3-1-1-3z"/><circle cx="12" cy="12" r="3"/></svg>Settings</a></nav>
+        <div class="sidebar-guide"><img src="/fizz-agent.svg" alt="" width="39" height="39"><strong>Your world has a sidekick.</strong><p>Connect your first device and let Fizz make sense of the signals.</p><a href="/#connect">Explore the platform <span aria-hidden="true">↗</span></a></div>
+        <div class="dashboard-account"><span class="account-avatar" aria-hidden="true">◈</span><span id="settings-username"></span><button type="button" id="settings-sign-out">Sign out</button></div>
+      </header>
+      <div class="workspace-content" id="workspace-content" tabindex="-1"><div class="workspace-topbar"><div class="workspace-breadcrumb">Workspace <span aria-hidden="true">/</span> <strong>Settings</strong></div><span><span class="status-dot" aria-hidden="true"></span> Personal workspace</span></div>
   <div class="sensors-heading"><div><p class="setup-eyebrow">YOUR ACCOUNT</p><h1 id="settings-title">Settings</h1><p>Your account details and the ways you sign in.</p></div><img src="/fizz-agent.svg" alt="" aria-hidden="true"></div>
 
   <section class="dash-panel settings-panel" aria-labelledby="account-title">
@@ -37,6 +46,6 @@
     <button class="secondary sign-in-again" id="sign-in-again" type="button" hidden>Sign in again</button>
   </section>
   <p class="form-message" id="page-error" role="alert"></p>
-</section></main>
+</div></section></main>
 <template id="key-icon"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill-rule="evenodd" d="M3 4h4v1h1v1h1v4h-1v1h-1v1H3v-1H2v-1H1V6h1V5h1zM4 7v2h2V7zM9 7h6v2H9zM12 9h1v2h-1zM14 9h1v3h-1z"/></svg></template>
 </body></html>

@@ -17,6 +17,8 @@
   let chatBusy = false;
   let voiceLocked = false;
   let chatController = null;
+  let sensorFilter = 'all';
+  const readingHistory = new Map();
 
   async function api(path, method = 'GET', body, signal) {
     const response = await fetch(path, { method, credentials: 'same-origin', signal, headers: { 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
@@ -36,24 +38,93 @@
     return sensor ? sensor.name || kinds.get(sensor.kind).label : 'Removed sensor';
   }
 
+  // Keep an honest, bounded trend from readings actually seen in this session.
+  // Do not turn simulated values into a claimed history or invent missing samples.
+  function recordReading(sensor) {
+    const reading = sensor.latest_reading;
+    if (!Number.isFinite(reading?.numeric_value)) return;
+    const stamp = reading.observed_at || reading.received_at;
+    if (!stamp) return;
+    let history = readingHistory.get(sensor.id);
+    if (!history || history.metric !== reading.metric || history.unit !== reading.unit) {
+      history = { metric: reading.metric, unit: reading.unit, points: [] };
+      readingHistory.set(sensor.id, history);
+    }
+    if (!history.points.some((point) => point.stamp === stamp)) {
+      history.points.push({ stamp, value: reading.numeric_value });
+      history.points.sort((a, b) => new Date(a.stamp) - new Date(b.stamp));
+      history.points = history.points.slice(-24);
+    }
+  }
+
+  function sensorTrend(sensor) {
+    const history = readingHistory.get(sensor.id);
+    if (!history || history.points.length < 2) return node('p', 'trend-waiting', 'Collecting recent readings…');
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 240 32');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    svg.setAttribute('class', 'sensor-trend');
+    svg.setAttribute('role', 'img');
+    const values = history.points.map((point) => point.value);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    svg.setAttribute('aria-label', `${kinds.metricLabel(history.metric)}: ${values.length} readings since opening this workspace, ranging from ${kinds.formatValue(min, history.unit)} to ${kinds.formatValue(max, history.unit)}.`);
+    const path = document.createElementNS(svgNS, 'path');
+    const firstTime = new Date(history.points[0].stamp).getTime();
+    const timeRange = new Date(history.points.at(-1).stamp).getTime() - firstTime;
+    const points = history.points.map((point, index) => {
+      const x = timeRange > 0 ? 3 + ((new Date(point.stamp).getTime() - firstTime) / timeRange) * 234 : 3 + (index / (values.length - 1)) * 234;
+      const y = max === min ? 16 : 28 - ((point.value - min) / (max - min)) * 24;
+      return `${index ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`;
+    });
+    path.setAttribute('d', points.join(' '));
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', 'currentColor');
+    path.setAttribute('stroke-width', '1.5');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    path.setAttribute('vector-effect', 'non-scaling-stroke');
+    svg.append(path);
+    return svg;
+  }
+
+  function renderSummary() {
+    $('total-sensors').textContent = sensors.length;
+    $('live-devices').textContent = sensors.filter((sensor) => sensor.mode !== 'simulated').length;
+    const samples = sensors.filter((sensor) => sensor.mode === 'simulated').length;
+    $('sample-sensors').textContent = samples;
+    $('active-alerts').textContent = alertData.rules.filter((rule) => rule.enabled !== false).length;
+    $('sample-notice').hidden = samples === 0;
+  }
+
   function renderSensors() {
     const list = $('live-sensors');
     list.replaceChildren();
     $('live-empty').hidden = sensors.length > 0;
+    for (const id of readingHistory.keys()) {
+      if (!sensors.some((sensor) => sensor.id === id)) readingHistory.delete(id);
+    }
+    const visibleSensors = sensors.filter((sensor) => sensorFilter === 'all' || (sensorFilter === 'sample' ? sensor.mode === 'simulated' : sensor.mode !== 'simulated'));
+    $('filter-empty').hidden = sensors.length === 0 || visibleSensors.length > 0;
+    renderSummary();
     for (const sensor of sensors) {
+      recordReading(sensor);
+      if (!visibleSensors.includes(sensor)) continue;
       const info = kinds.get(sensor.kind);
       const card = node('article', 'live-card');
       card.style.setProperty('--sensor-color', info.color);
       const top = node('div', 'live-card-top');
       const title = node('div', 'live-card-title');
       title.append(node('h3', '', sensorName(sensor)), node('span', '', info.label.toUpperCase()));
-      const mode = node('span', `mode-pill ${sensor.mode}`, sensor.mode === 'simulated' ? 'SIMULATED' : sensor.mode === 'phone' ? 'PHONE' : 'LIVE API');
+      const mode = node('span', `mode-pill ${sensor.mode}`, sensor.mode === 'simulated' ? 'SAMPLE' : sensor.mode === 'phone' ? 'PHONE' : 'API');
+      mode.title = sensor.mode === 'simulated' ? 'Simulated sample data' : sensor.mode === 'phone' ? 'Paired phone sensor' : 'API sensor';
       top.append(kinds.badge(sensor.kind), title, mode);
       const latest = sensor.latest_reading;
       const metric = node('p', 'live-metric', latest?.metric ? kinds.metricLabel(latest.metric) : 'Awaiting first reading');
       const value = node('p', 'live-value', kinds.formatReading(latest));
       const foot = node('p', 'live-foot', latest ? `Updated ${new Date(latest.observed_at || latest.received_at).toLocaleTimeString()}` : 'A sample will appear shortly');
-      card.append(top, metric, value, foot);
+      card.append(top, metric, value, sensorTrend(sensor), foot);
       list.append(card);
     }
     const picker = $('alert-sensor');
@@ -85,6 +156,7 @@
     if ($('dashboard').hidden) return;
     if (requestInFlight) { refreshQueued = true; return; }
     requestInFlight = true;
+    $('dashboard-refresh').disabled = true;
     const version = sessionGeneration;
     try {
       const [inventory, alerts] = await Promise.all([api('/api/sensors'), api('/api/alerts')]);
@@ -93,11 +165,18 @@
       alertData = { rules: alerts.rules || [], events: alerts.events || [] };
       renderSensors();
       renderAlerts();
+      $('dashboard-subtitle').textContent = 'A clear view of your sensors, signals, and alerts.';
+      $('dashboard-subtitle').classList.remove('refresh-error');
+      $('dashboard-updated').textContent = `LAST SYNCED ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
       void window.fizzVoiceClips.refresh(sensors);
     } catch (error) {
+      if (version !== sessionGeneration || $('dashboard').hidden) return;
       $('dashboard-subtitle').textContent = `Unable to refresh sensor data: ${error.message}`;
+      $('dashboard-subtitle').classList.add('refresh-error');
+      $('dashboard-updated').textContent = 'SYNC UNAVAILABLE · RETRY WITH REFRESH';
     } finally {
       requestInFlight = false;
+      $('dashboard-refresh').disabled = false;
       if (refreshQueued) { refreshQueued = false; void refresh(); }
     }
   }
@@ -306,6 +385,7 @@
     $('chat-form').querySelector('button[type=submit]').disabled = chatBusy || voiceLocked;
     $('chat-input').disabled = chatBusy || voiceLocked;
     window.fizzChatVoice?.setBusy(chatBusy);
+    for (const prompt of document.querySelectorAll('[data-chat-prompt]')) prompt.disabled = chatBusy || voiceLocked;
   }
 
   async function sendMessage(message) {
@@ -356,6 +436,22 @@
     lock(active) { voiceLocked = active; updateChatControls(); },
   };
 
+  $('dashboard-refresh').addEventListener('click', () => void refresh());
+  for (const button of document.querySelectorAll('[data-sensor-filter]')) {
+    button.addEventListener('click', () => {
+      sensorFilter = button.dataset.sensorFilter;
+      for (const filter of document.querySelectorAll('[data-sensor-filter]')) filter.setAttribute('aria-pressed', String(filter === button));
+      renderSensors();
+    });
+  }
+  for (const button of document.querySelectorAll('[data-chat-prompt]')) {
+    button.addEventListener('click', () => {
+      if (chatBusy || voiceLocked) return;
+      window.fizzChatVoice?.stopPlayback();
+      void sendMessage(button.dataset.chatPrompt);
+    });
+  }
+
   $('alert-sensor').addEventListener('change', updateMetricHint);
   $('alert-metric').addEventListener('input', () => { $('alert-metric').dataset.autofill = 'false'; });
   $('alert-unit').addEventListener('input', () => { $('alert-unit').dataset.autofill = 'false'; });
@@ -394,6 +490,7 @@
   window.fizzDashboard = {
     start(username, initialSensors) {
       sessionGeneration++;
+      document.title = 'Overview · Fizzlayer';
       $('dashboard-username').textContent = username;
       $('dashboard-subtitle').textContent = 'Your sensors are ready.';
       sensors = initialSensors || [];
@@ -415,12 +512,15 @@
       if (timer) clearInterval(timer);
       timer = null;
       sensors = [];
+      readingHistory.clear();
+      sensorFilter = 'all';
+      for (const filter of document.querySelectorAll('[data-sensor-filter]')) filter.setAttribute('aria-pressed', String(filter.dataset.sensorFilter === 'all'));
       alertData = { rules: [], events: [] };
       showAllEvents = false;
       setThinking(false);
       window.fizzVoiceClips.reset();
       $('chat-messages').replaceChildren();
-      appendMessage('agent', 'Hi! Ask me what your sensors are seeing, or tell me what you want to watch for.');
+      appendMessage('agent', 'Hi, I’m Fizz. I can help you understand your sensors and keep an eye on what matters. What would you like to know?');
       $('chat-input').value = '';
       $('chat-error').textContent = '';
       $('alert-notify').value = 'none';
